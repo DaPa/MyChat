@@ -1,0 +1,178 @@
+<!-- Plugin Configuration File. Read more: https://plugins.jetbrains.com/docs/intellij/plugin-configuration-file.html -->
+<idea-plugin>
+    <!-- Unique identifier of the plugin. It should be FQN. It cannot be changed between the plugin versions. -->
+    <id>com.example.MyChat</id>
+
+    <!-- Public plugin name should be written in Title Case.
+     Guidelines: https://plugins.jetbrains.com/docs/marketplace/best-practices-for-listing.html#plugin-name -->
+    <name>MyChat</name>
+
+    <!-- A displayed Vendor name or Organization ID displayed on the Plugins Page. -->
+    <vendor url="https://www.google.co.uk">MyCompany</vendor>
+
+    <!-- Description of the plugin displayed on the Plugin Page and IDE Plugin Manager.
+         Guidelines: https://plugins.jetbrains.com/docs/marketplace/best-practices-for-listing.html#plugin-description -->
+    <description><![CDATA[
+        <b>MyChat</b> is a simple browser plug-in that makes it easy<br>
+        <em>to open a web page in the editor.</em>
+        ]]></description>
+
+    <!-- Product and plugin compatibility requirements.
+         Read more: https://plugins.jetbrains.com/docs/intellij/plugin-compatibility.html -->
+    <depends>com.intellij.modules.platform</depends>
+
+    <resource-bundle>messages.MyChatMessagesBundle</resource-bundle>
+
+    <!-- Extensions defined by the plugin.
+         Read more: https://plugins.jetbrains.com/docs/intellij/plugin-extension-points.html -->
+    <extensions defaultExtensionNs="com.intellij">
+        <toolWindow
+                id="MyChatWindow"
+                factoryClass="com.example.MyChatWindowFactory"
+                anchor="right"
+                icon="/META-INF/pluginIcon.svg"
+                secondary="false"
+        />
+        <applicationConfigurable
+            instance="com.example.settings.MyChatConfigurable"
+            id="MyChatSettings"
+            displayName="MyChat"
+        />
+        <!--
+            PostStartupActivity runs after the IDE is fully initialized — all services
+            including ProxyMigrationService are available by this point.
+            This is used to safely initialize JCEF (JBCefApp) without triggering
+            "Class initialization must not depend on services" during startup.
+            DumbAware = runs even during indexing (no need to wait for smart mode).
+        -->
+        <postStartupActivity implementation="com.example.MyChatStartupActivity"/>
+    </extensions>
+
+    <actions>
+        <action id="MyChat.FindInBrowser"
+                class="com.example.actions.FindInBrowserAction"
+                text="Find in Chat"
+                description="Find"
+                icon="AllIcons.Actions.Search">// for all icons, see https://intellij-icons.jetbrains.design/
+            <keyboard-shortcut keymap="$default" first-keystroke="ctrl F"/>
+        </action>
+
+        <action id="MyChat.FindInBrowserNext"
+                class="com.example.actions.FindInBrowserNextAction"
+                text="Find Next"
+                description="Find next"
+                icon="AllIcons.General.ChevronDown">
+            <keyboard-shortcut keymap="$default" first-keystroke="F3"/>
+        </action>
+
+        <action id="MyChat.FindInBrowserPrevious"
+                class="com.example.actions.FindInBrowserPreviousAction"
+                text="Find Previous"
+                description="Find previous"
+                icon="AllIcons.General.ChevronUp">
+            <keyboard-shortcut keymap="$default" first-keystroke="shift F3"/>
+        </action>
+
+        <action id="MyChat.Back"
+                class="com.example.actions.BackAction"
+                text="Back"
+                description="Go back"
+                icon="AllIcons.Actions.Back">
+            <keyboard-shortcut keymap="$default" first-keystroke="alt LEFT"/>
+        </action>
+
+        <action id="MyChat.Forward"
+                class="com.example.actions.ForwardAction"
+                text="Forward"
+                description="Go forward"
+                icon="AllIcons.Actions.Forward">
+            <keyboard-shortcut keymap="$default" first-keystroke="alt RIGHT"/>
+        </action>
+
+        <action id="MyChat.Stop"
+                class="com.example.actions.StopAction"
+                text="Stop"
+                description="Stop the current operation"
+                icon="AllIcons.Actions.Suspend">
+            <keyboard-shortcut keymap="$default" first-keystroke="ESCAPE"/>
+        </action>
+
+        <action id="MyChat.Refresh"
+                class="com.example.actions.RefreshAction"
+                text="Refresh"
+                description="Reload the current page"
+                icon="AllIcons.Actions.Refresh">
+            <keyboard-shortcut keymap="$default" first-keystroke="F5"/>
+        </action>
+
+        <action id="MyChat.Home"
+                class="com.example.actions.HomeAction"
+                text="Home"
+                description="Go to the home page"
+                icon="AllIcons.Nodes.HomeFolder">
+            <keyboard-shortcut keymap="$default" first-keystroke="alt HOME"/>
+        </action>
+
+        <action id="MyChat.ClearCookies"
+                class="com.example.actions.ClearCookiesAction"
+                text="Clear Cookies"
+                description="Clear all cookies"
+                icon="AllIcons.Actions.GC">
+            <keyboard-shortcut keymap="$default" first-keystroke="alt DELETE"/>
+        </action>
+
+        <action id="MyChat.Debug"
+                class="com.example.actions.DebugAction"
+                text="Debug"
+                description="Open CEF DevTools in the internal browser"
+                icon="AllIcons.Actions.StartDebugger">
+            <keyboard-shortcut keymap="$default" first-keystroke="F12"/>
+        </action>
+
+        <action id="MyChat.OpenSettings"
+                class="com.example.actions.OpenMyChatSettingsAction"
+                text="MyChat Settings"
+                description="Open the IDE settings and jump to other settings -> myChat"
+                icon="AllIcons.General.Settings">
+            <keyboard-shortcut keymap="$default" first-keystroke="alt F1"/>
+        </action>
+
+        <action id="MyChat.OpenKeymap"
+                class="com.example.actions.OpenMyChatKeymapAction"
+                text="MyChat Keymap"
+                description="Go to IDE settings -> keymap -> plugins -> myChat"
+                icon="AllIcons.General.Keyboard">
+            <keyboard-shortcut keymap="$default" first-keystroke="alt F2"/>
+        </action>
+
+        <group id="MyChat.PopupGroup"
+               text="MyChat"
+               popup="true"
+               icon="/META-INF/pluginIcon.svg">
+
+            <!-- Add the submenu to the desired context menus -->
+            <add-to-group group-id="EditorTabPopupMenu" anchor="last"/>
+            <add-to-group group-id="EditorPopupMenu" anchor="last"/>
+            <add-to-group group-id="ProjectViewPopupMenu" anchor="last"/>
+
+            <action id="MyChat.SendToMyChat"
+                    class="com.example.actions.SendToMyChatAction"
+                    text="- Send To"
+                    description="Send the current file to the MyChat browser"
+                    icon="AllIcons.Actions.Upload">
+                <keyboard-shortcut keymap="$default" first-keystroke="alt M"/>
+            </action>
+
+            <action id="MyChat.EmbedToMyChat"
+                    class="com.example.actions.EmbedToMyChatAction"
+                    text="- Embed To"
+                    description="Embed the current file to the MyChat browser"
+                    icon="AllIcons.Actions.Upload">
+                <keyboard-shortcut keymap="$default" first-keystroke="alt E"/>
+            </action>
+
+        </group>
+
+    </actions>
+
+</idea-plugin>

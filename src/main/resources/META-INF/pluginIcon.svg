@@ -1,0 +1,81 @@
+<svg width="16" height="16" viewBox="1 1 39 32"
+     xmlns="http://www.w3.org/2000/svg">
+
+    <!-- 🌌 Orbit path -->
+    <ellipse cx="20" cy="20"
+             rx="20" ry="10"
+             fill="none"
+             stroke="white"
+             stroke-opacity="0.06"
+             stroke-width="1"
+             transform="rotate(-25 20 20)" />
+
+    <!-- 🌕 Back ring -->
+    <ellipse cx="20" cy="22"
+             rx="18" ry="6"
+             fill="none"
+             stroke="url(#ringBackGradient)"
+             stroke-width="3"
+             opacity="0.6"
+             transform="rotate(-20 20 20)" />
+
+    <!-- 🌑 Shadow -->
+    <circle cx="23" cy="17" r="13"
+            fill="url(#shadowGradient)" />
+
+    <!-- 🪐 Planet -->
+    <circle cx="20" cy="20" r="13"
+            fill="url(#planetGradient)" />
+
+    <!-- ✨ Highlight -->
+    <circle cx="16" cy="15" r="5"
+            fill="white"
+            opacity="0.15" />
+
+    <!-- 🌙 Moon -->
+    <circle cx="37" cy="7" r="3"
+            fill="url(#moonGradient)" />
+
+    <!-- 💫 Front ring -->
+    <path d="M 4 22 A 18 6 0 0 0 36 20"
+          fill="none"
+          stroke="url(#ringFrontGradient)"
+          stroke-width="3"
+          opacity="0.75"
+          transform="rotate(-22 28 14)" />
+
+    <defs>
+
+        <!-- 🌍 Planet -->
+        <radialGradient id="planetGradient" cx="30%" cy="30%" r="75%">
+            <stop offset="0%"  stop-color="#D7F040"/>
+            <stop offset="40%" stop-color="#3C99CC"/>
+            <stop offset="100%" stop-color="#14253A"/>
+        </radialGradient>
+
+        <!-- 🌑 Shadow -->
+        <radialGradient id="shadowGradient" cx="70%" cy="70%" r="70%">
+            <stop offset="0%" stop-color="transparent"/>
+            <stop offset="100%" stop-color="black" stop-opacity="0.35"/>
+        </radialGradient>
+
+        <!-- 🌙 Moon -->
+        <radialGradient id="moonGradient" cx="30%" cy="30%" r="80%">
+            <stop offset="0%" stop-color="#FFFFFF"/>
+            <stop offset="100%" stop-color="#999999"/>
+        </radialGradient>
+
+        <!-- 💍 Rings -->
+        <linearGradient id="ringBackGradient" x1="0" y1="0" x2="40" y2="40">
+            <stop offset="0%" stop-color="#8C6B3F"/>
+            <stop offset="100%" stop-color="#E2C48B"/>
+        </linearGradient>
+
+        <linearGradient id="ringFrontGradient" x1="0" y1="0" x2="40" y2="40">
+            <stop offset="0%" stop-color="#EED7A1"/>
+            <stop offset="100%" stop-color="#B89155"/>
+        </linearGradient>
+
+    </defs>
+
+</svg>

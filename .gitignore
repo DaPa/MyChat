@@ -1,0 +1,9 @@
+.gradle/
+.idea/
+.intellijPlatform/
+.kotlin/
+.run/
+build/
+!gradle-wrapper.properties
+*.iml
+*.toml
