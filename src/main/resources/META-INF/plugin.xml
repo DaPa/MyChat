@@ -46,6 +46,8 @@
             DumbAware = runs even during indexing (no need to wait for smart mode).
         -->
         <postStartupActivity implementation="com.example.MyChatStartupActivity"/>
+        <jcef.appRequiredArgumentsProvider implementation="com.example.MyChatCefArgsProvider"/>
+        <notificationGroup id="MyChat.ThemeChangeNotification" displayType="STICKY_BALLOON"/>
     </extensions>
 
     <actions>

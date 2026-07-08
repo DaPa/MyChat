@@ -5,7 +5,25 @@
 
 ## Nice hints
 
-Enable "Internal Mode": menu Help -> Edit Custom VM Options... -> add: "-Didea.is.internal=true" (in idea64.exe.vmoptions), then "Ctrl+Alt+Click" on any GUI element to inspect 
+### GUI inspection (enable "Internal Mode")
+1. from menu Help → Edit Custom VM Options... → add: "-Didea.is.internal=true" (in idea64.exe.vmoptions)
+2. then "Ctrl+Alt+Click" on any GUI element to inspect
+
+### JCEF remote debugging
+1. "build.gradle.kts" adds "-Dide.browser.jcef.debug.port=9222" JVM property to IDE run configuration (idea64.exe.vmoptions)
+2. Start a remote debugging session in Chrome: chrome://inspect/#devices
+3. Check only "Discover network targets"
+4. Click "Configure"
+5. Add "localhost:9222"
+6. Refresh the page or wait for automatic refresh
+7. You should then see JCEF targets such as "Chat...", click "inspect" to get a normal Chromium DevTools window.
+8. in Console, **DO NOT PASTE** instead manually type "allow pasting"
+9. Then can paste any of the following:
+    - window.matchMedia("(prefers-color-scheme: dark)").matches
+    - navigator.userAgent
+    - getComputedStyle(document.documentElement).colorScheme
+
+
 
 // Gradle plugins: https://plugins.gradle.org/
 // Marketplace: https://plugins.jetbrains.com/search?excludeTags=theme&search=AI+chat

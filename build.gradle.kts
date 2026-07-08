@@ -25,10 +25,6 @@ kotlin {
     compilerOptions {
         jvmTarget.set(JvmTarget.JVM_25)
         jvmDefault.set(JvmDefaultMode.NO_COMPATIBILITY)
-
-        freeCompilerArgs.add(
-            "-Xannotation-default-target=param-property"
-        )
     }
 }
 
@@ -39,6 +35,8 @@ tasks {
 
         // Sandbox IDE heap.
         jvmArgs("-Xmx4G")
+        // Enable JCEF remote debugging.
+        jvmArgs("-Dide.browser.jcef.debug.port=9222")
         //jvmArgs("-Dide.browser.jcef.gpu.disable=true")
         // Off-Screen Rendering for JCEF (JetBrains Chromium Embedded Framework)
         //jvmArgs("-Dide.browser.jcef.osr.enabled=true")

@@ -3,6 +3,7 @@ package com.example
 import com.example.browser.BrowserDataKeys
 import com.example.settings.MyChatSettings
 import com.example.ui.BrowserFindBar
+import com.example.ui.MyThemeListener
 import com.example.utils.ComponentUtils.buildOnLoadEndScript
 import com.example.utils.ComponentUtils.injectFilesViaJs
 import com.example.utils.acceptOrRejectFileDrop
@@ -13,11 +14,19 @@ import com.intellij.ide.dnd.DnDEvent
 import com.intellij.ide.dnd.DnDManager
 import com.intellij.ide.dnd.DnDNativeTarget
 import com.intellij.ide.setToolTipText
+import com.intellij.ide.ui.LafManager
+import com.intellij.notification.Notification
+import com.intellij.notification.NotificationAction
+import com.intellij.notification.NotificationGroupManager
+import com.intellij.notification.NotificationType
+import com.intellij.openapi.Disposable
 import com.intellij.openapi.actionSystem.ActionManager
+import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.actionSystem.DataSink
 import com.intellij.openapi.actionSystem.DefaultActionGroup
 import com.intellij.openapi.actionSystem.UiDataProvider
 import com.intellij.openapi.application.ApplicationManager
+import com.intellij.openapi.application.ModalityState
 import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.ComboBox
@@ -134,7 +143,7 @@ class MyChatWindowFactory : ToolWindowFactory {
             return
         }
 
-        val myToolWindow = MyChatWindow()
+        val myToolWindow = MyChatWindow(project)
 
         /**
          * ContentFactory wraps the Swing panel into IntelliJ's content tab system.
@@ -159,7 +168,7 @@ class MyChatWindowFactory : ToolWindowFactory {
      *  - The JS injection logic
      *  - Site config matching (URL → button selector)
      */
-    class MyChatWindow {
+    class MyChatWindow(private val project: Project): Disposable {  // class MyChatWindow
 
         companion object {
             private val LOG = Logger.getInstance(MyChatWindow::class.java)
@@ -253,6 +262,13 @@ class MyChatWindowFactory : ToolWindowFactory {
         private lateinit var browser: JBCefBrowser
         private lateinit var findBar: BrowserFindBar
 
+        // Captured once, before the browser/content are built — this is the theme
+        // baked into the current CEF process via --force-dark-mode/--force-light-mode.
+        // Must be declared BEFORE `content`, since building `content` synchronously
+        // triggers MyThemeListener's immediate callback, which reads this value.
+        private val cefLaunchDarkState = LafManager.getInstance().currentUIThemeLookAndFeel.isDark
+        private var themeMismatchNotified = false
+
         /**
          * The root Swing panel of the tool window content.
          *
@@ -284,12 +300,67 @@ class MyChatWindowFactory : ToolWindowFactory {
                 setupUi(this)
             }
 
+        private fun showThemeRestartNotification() {
+            val notification = NotificationGroupManager.getInstance()
+                .getNotificationGroup("MyChat.ThemeChangeNotification")
+                .createNotification(
+                    "MyChat browser theme is out of sync",
+                    "The IDE theme changed. MyChat's embedded browser needs an IDE restart " +
+                        "to match the new theme for sites using \"System\" appearance.",
+                    NotificationType.INFORMATION
+                )
+
+            notification.addAction(object : NotificationAction("Restart IDE") {
+                override fun actionPerformed(e: AnActionEvent, notification: Notification) {
+                    notification.expire()
+                    ApplicationManager.getApplication().restart()
+                }
+            })
+
+            notification.addAction(object : NotificationAction("Dismiss") {
+                override fun actionPerformed(e: AnActionEvent, notification: Notification) {
+                    notification.expire()
+                }
+            })
+
+            // ModalityState.any() bypasses the "no UI updates while a modal dialog is open"
+            // guard, so the balloon shows immediately even if the theme change came from
+            // inside the modal Settings dialog (live preview), instead of being queued
+            // until the dialog closes.
+            ApplicationManager.getApplication().invokeLater(
+                { notification.notify(project) },
+                ModalityState.any()
+            )
+        }
+
         /**
          * Contains all UI initialization logic.
          */
         private fun setupUi(panel: JPanel) {
 
             browser = JBCefBrowser(currentSite.url)
+
+            println("cefLaunchDarkState   = $cefLaunchDarkState")
+            println("debug port = ${System.getProperty("ide.browser.jcef.debug.port")}")
+            println("cef args   = ${System.getProperty("ide.browser.jcef.command.line.args")}")
+            //LOG.info("JCEF debug port = ${System.getProperty("ide.browser.jcef.debug.port")}")
+            //LOG.info("JCEF command line args = ${System.getProperty("ide.browser.jcef.command.line.args")}")
+
+            MyThemeListener(this) { dark ->
+
+                LOG.info("MyThemeListener callback fired. dark=$dark, cefLaunchDarkState=$cefLaunchDarkState")
+
+                // New: warn when the IDE theme has drifted from what CEF was launched with.
+                if (dark != cefLaunchDarkState) {
+                    if (!themeMismatchNotified) {
+                        showThemeRestartNotification()
+                        themeMismatchNotified = true
+                    }
+                } else {
+                    // User flipped back to the original theme — no restart needed anymore.
+                    themeMismatchNotified = false
+                }
+            }
 
             /**
              * Register the console-suppressing display handler once here, not inside onLoadEnd.
@@ -583,6 +654,10 @@ class MyChatWindowFactory : ToolWindowFactory {
          */
         fun getContent(): JPanel = content
 
-    }  // class MyChatWindow
+        override fun dispose() {
+            TODO("Not yet implemented")
+        }
+
+    }
 
 }  // class MyChatWindowFactory
