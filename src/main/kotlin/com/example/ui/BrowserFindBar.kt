@@ -9,9 +9,15 @@ import com.intellij.openapi.util.text.HtmlChunk
 import javax.swing.JButton
 import com.intellij.util.ui.JBUI
 import com.intellij.ui.jcef.JBCefBrowser
+import com.intellij.ui.jcef.JBCefBrowserBase
+import com.intellij.ui.jcef.JBCefJSQuery
+import com.intellij.openapi.Disposable
+import com.intellij.openapi.util.Disposer
 import java.awt.BorderLayout
 import java.awt.Dimension
 import java.awt.FlowLayout
+import java.awt.GridBagConstraints
+import java.awt.GridBagLayout
 import javax.swing.Box
 import javax.swing.JCheckBox
 import javax.swing.JPanel
@@ -28,28 +34,46 @@ import javax.swing.SwingConstants
  */
 class BrowserFindBar(
     private val browser: JBCefBrowser
-) : JBPanel<BrowserFindBar>(BorderLayout()) {
+) : JBPanel<BrowserFindBar>(BorderLayout()), Disposable {
 
     private val textField = JBTextField()
-    private val matchLabel = JBLabel()  // "0/0"  TODO: update this when CefFindHandler/CefFindHandlerAdapter or addFindHandler/onFindResult are available
+    private val matchLabel = JBLabel()
     private val matchCaseCheckBox = JCheckBox("Aa")
     private var lastSearchText: String? = null
+    private val jsQuery = JBCefJSQuery.create(browser as JBCefBrowserBase)
 
     init {
+        Disposer.register(this, jsQuery)
+        jsQuery.addHandler { countStr ->
+            println("BrowserFindBar: received match count = $countStr")
+            val count = countStr.toIntOrNull() ?: 0
+            updateMatchLabel(0, count)
+            null
+        }
+
         border = JBUI.Borders.empty(4)
 
-        matchLabel.preferredSize = Dimension(45, matchLabel.preferredSize.height)
-        matchLabel.horizontalAlignment = SwingConstants.RIGHT
+        matchLabel.horizontalAlignment = SwingConstants.LEFT
 
-        val searchPanel = JPanel(FlowLayout(FlowLayout.LEFT, 5, 0)).apply {
-            add(JBLabel("Find:"))
+        val searchPanel = JPanel(GridBagLayout()).apply {
+            val gbc = GridBagConstraints()
+            gbc.insets = JBUI.insets(0, 3)
+            gbc.anchor = GridBagConstraints.WEST
+            gbc.fill = GridBagConstraints.NONE
 
-            textField.columns = 20
-            add(textField)
-            add(Box.createHorizontalStrut(2))
-            add(matchLabel)
+            add(JBLabel("Find:"), gbc)
+
+            textField.columns = 15
+            add(textField, gbc)
+
+            gbc.weightx = 1.0
+            gbc.fill = GridBagConstraints.HORIZONTAL
+            add(matchLabel, gbc)
+
+            gbc.weightx = 0.0
+            gbc.fill = GridBagConstraints.NONE
             matchCaseCheckBox.setToolTipText(HtmlChunk.text("Match Case"))
-            add(matchCaseCheckBox)
+            add(matchCaseCheckBox, gbc)
 
             // for all icons see https://intellij-icons.jetbrains.design/
             val prevBtn = JButton(AllIcons.General.ChevronUp) // see action id="MyChat.FindInBrowserPrevious"
@@ -58,34 +82,24 @@ class BrowserFindBar(
             nextBtn.setToolTipText(HtmlChunk.text("Find Next match"))
             val closeBtn = JButton(AllIcons.Actions.Close)
             closeBtn.setToolTipText(HtmlChunk.text("Close find"))
-            prevBtn.isFocusable = false
-            nextBtn.isFocusable = false
-            closeBtn.isFocusable = false
-            prevBtn.border = null
-            nextBtn.border = null
-            closeBtn.border = null
-
+            
             fun configureIconButton(button: JButton) {
                 val size = Dimension(24, 24)
-
                 button.preferredSize = size
                 button.minimumSize = size
                 button.maximumSize = size
-
                 button.margin = JBUI.emptyInsets()
-
                 button.isFocusable = false
                 button.isContentAreaFilled = false
+                button.border = null
             }
             configureIconButton(prevBtn)
             configureIconButton(nextBtn)
             configureIconButton(closeBtn)
 
-            add(Box.createHorizontalStrut(4))
-            add(prevBtn)
-            add(nextBtn)
-            add(Box.createHorizontalStrut(4))
-            add(closeBtn)
+            add(prevBtn, gbc)
+            add(nextBtn, gbc)
+            add(closeBtn, gbc)
 
             // --- Button logic ---
             prevBtn.addActionListener {
@@ -104,7 +118,7 @@ class BrowserFindBar(
             }
         }
 
-        add(searchPanel, BorderLayout.WEST)
+        add(searchPanel, BorderLayout.CENTER)
 
         // --- Live search while typing ---
         textField.addActionListener {
@@ -133,6 +147,22 @@ class BrowserFindBar(
             WHEN_FOCUSED
         )
 
+        textField.registerKeyboardAction(
+            {
+                browser.openDevtools()
+            },
+            KeyStroke.getKeyStroke("control shift I"),
+            WHEN_FOCUSED
+        )
+
+        textField.registerKeyboardAction(
+            {
+                browser.openDevtools()
+            },
+            KeyStroke.getKeyStroke("meta shift I"),
+            WHEN_FOCUSED
+        )
+
         matchCaseCheckBox.addActionListener {
             val text = textField.text
             if (text.isNotBlank()) {
@@ -148,8 +178,13 @@ class BrowserFindBar(
      */
     fun performFind(forward: Boolean, findNext: Boolean) {
         val text = textField.text
+        if (text.isBlank()) {
+            lastSearchText = ""
+            updateMatchLabel(0, 0)
+            browser.cefBrowser.stopFinding(true)
+            return
+        }
         lastSearchText = text
-        if (text.isBlank()) return
 
         browser.cefBrowser.find(
             text,
@@ -157,6 +192,58 @@ class BrowserFindBar(
             matchCaseCheckBox.isSelected,
             findNext
         )
+
+        // Alternative: Use JS to count matches since CefFindHandler is still missing in 2026.2
+        val escapedText = text.replace("\\", "\\\\").replace("'", "\\'")
+        val flags = if (matchCaseCheckBox.isSelected) "g" else "gi"
+        val js = """
+            (function() {
+                var searchText = '$escapedText';
+                var flags = '$flags';
+                if (!searchText) return;
+                try {
+                    var pattern = searchText.replace(/[-\/\\^${'$'}*+?.()|[\]{}]/g, '\\${'$'}&');
+                    var regex = new RegExp(pattern, flags);
+                    var visited = new Set();
+                    
+                    function getDeepText(node) {
+                        if (!node) return "";
+                        if (node.nodeType === Node.TEXT_NODE) {
+                            if (visited.has(node)) return "";
+                            visited.add(node);
+                            return node.textContent;
+                        }
+                        var name = node.nodeName;
+                        if (name === 'SCRIPT' || name === 'STYLE' || name === 'NOSCRIPT' || name === 'TEMPLATE') return "";
+                        
+                        var t = "";
+                        if (node.shadowRoot) {
+                            var shadowChildren = node.shadowRoot.childNodes;
+                            for (var i = 0; i < shadowChildren.length; i++) {
+                                t += getDeepText(shadowChildren[i]);
+                            }
+                        }
+                        if (node.childNodes) {
+                            var children = node.childNodes;
+                            for (var i = 0; i < children.length; i++) {
+                                t += getDeepText(children[i]);
+                            }
+                        }
+                        return t;
+                    }
+                    
+                    var allText = getDeepText(document.body);
+                    var matches = allText.match(regex);
+                    var count = matches ? matches.length : 0;
+                    console.log('Find: pattern="' + pattern + '" flags="' + flags + '" found ' + count + ' matches');
+                    ${jsQuery.inject("count.toString()")}
+                } catch (e) {
+                    console.error('Find count error:', e);
+                }
+            })();
+        """.trimIndent()
+        browser.cefBrowser.executeJavaScript(js, "", 0)
+
         textField.requestFocus()
     }
 
@@ -175,14 +262,18 @@ class BrowserFindBar(
     }
 
 
-    // TODO: update this when CefFindHandler/CefFindHandlerAdapter or addFindHandler/onFindResult are available
     private fun updateMatchLabel(
         activeMatchOrdinal: Int,
         count: Int
     ) {
-        matchLabel.text =
-            if (count <= 0) ""
-            else "$activeMatchOrdinal/$count"
+        matchLabel.text = when {
+            textField.text.isBlank() -> ""
+            activeMatchOrdinal > 0 -> "$activeMatchOrdinal/$count"
+            else -> "Matches: $count"
+        }
     }
 
+    override fun dispose() {
+        // JBCefJSQuery is disposed via Disposer.register in init
+    }
 }

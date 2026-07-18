@@ -469,6 +469,7 @@ class MyChatWindowFactory : ToolWindowFactory {
             toolbar.targetComponent = browser.component
 
             findBar = BrowserFindBar(browser)
+            Disposer.register(this, findBar)
 
             // Top bar: URL field stretches to fill available width; toolbar is pinned to the right.
             val topPanel = JPanel(BorderLayout()).apply {
