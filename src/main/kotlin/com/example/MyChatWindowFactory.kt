@@ -20,6 +20,7 @@ import com.intellij.notification.NotificationAction
 import com.intellij.notification.NotificationGroupManager
 import com.intellij.notification.NotificationType
 import com.intellij.openapi.Disposable
+import com.intellij.openapi.util.Disposer
 import com.intellij.openapi.actionSystem.ActionManager
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.actionSystem.DataSink
@@ -152,6 +153,7 @@ class MyChatWindowFactory : ToolWindowFactory {
          * - isLockable = false means the content can be replaced/closed by the platform
          */
         val content = ContentFactory.getInstance().createContent(myToolWindow.getContent(), null, false)
+        content.setDisposer(myToolWindow)
         toolWindow.contentManager.addContent(content)
     }
 
@@ -261,6 +263,7 @@ class MyChatWindowFactory : ToolWindowFactory {
          */
         private lateinit var browser: JBCefBrowser
         private lateinit var findBar: BrowserFindBar
+        private var dndTarget: DnDNativeTarget? = null
 
         // Captured once, before the browser/content are built — this is the theme
         // baked into the current CEF process via --force-dark-mode/--force-light-mode.
@@ -339,6 +342,7 @@ class MyChatWindowFactory : ToolWindowFactory {
         private fun setupUi(panel: JPanel) {
 
             browser = JBCefBrowser(currentSite.url)
+            Disposer.register(this, browser)
 
             println("cefLaunchDarkState   = $cefLaunchDarkState")
             println("debug port = ${System.getProperty("ide.browser.jcef.debug.port")}")
@@ -640,6 +644,7 @@ class MyChatWindowFactory : ToolWindowFactory {
                     injectFilesViaJs(browser, ioFiles, currentSite)
                 }
             }
+            this.dndTarget = target
 
             // Register on both panel and browser component — JCEF's heavyweight native window
             // sits on top of the panel, so the panel alone may never receive the drag.
@@ -655,7 +660,10 @@ class MyChatWindowFactory : ToolWindowFactory {
         fun getContent(): JPanel = content
 
         override fun dispose() {
-            TODO("Not yet implemented")
+            dndTarget?.let {
+                DnDManager.getInstance().unregisterTarget(it, content)
+                DnDManager.getInstance().unregisterTarget(it, browser.component)
+            }
         }
 
     }
