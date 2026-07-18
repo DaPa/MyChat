@@ -4,6 +4,7 @@ import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.keymap.impl.ui.KeymapPanel
 import com.intellij.openapi.options.ShowSettingsUtil
 import com.intellij.ui.SearchTextField
+import java.awt.Container
 import java.awt.Window
 
 /**
@@ -21,7 +22,7 @@ import java.awt.Window
  *  - A background thread is the only way to act concurrently with the modal dialog
  *
  * ❗ Fragile points (may break on IntelliJ version upgrades):
- *  - isSettingsDialog() uses reflection to access the private "this$0" field
+ *  - findKeymapSearchFieldInOpenSettings() searches all visible windows for KeymapPanel
  *  - findSearchFieldUnderKeymapPanel() relies on the Swing component hierarchy
  *  - KeymapPanel is an internal IntelliJ class (com.intellij.openapi.keymap.impl.ui)
  */
@@ -121,54 +122,19 @@ class OpenMyChatKeymapAction : AbstractBrowserAction() {
     // --- Swing tree traversal ---
 
     /**
-     * Entry point: scans all open AWT windows for the IntelliJ Settings dialog,
-     * then finds the SearchTextField inside its KeymapPanel.
+     * Entry point: scans all open AWT windows for the IntelliJ Settings dialog by
+     * looking for a KeymapPanel, then finds the SearchTextField inside it.
      *
      * Returns null if the dialog isn't open yet or KeymapPanel isn't visible yet.
      * The caller is expected to retry (polling loop).
-     *
-     * @Suppress reason: "MyChat" is always the filter value here; the warning fires because
-     * the parameter could theoretically be any string but is only ever called with one value.
      */
-    @Suppress("SameParameterValue")
     private fun findKeymapSearchFieldInOpenSettings(): SearchTextField? {
+        // We search through all visible windows for a KeymapPanel. This is more robust
+        // than trying to identify the SettingsDialog via reflection on internal
+        // DialogWrapper fields (which broke in 2026.2).
         return Window.getWindows()
-            .firstOrNull { it.isVisible && isSettingsDialog(it) }
-            ?.let { findSearchFieldUnderKeymapPanel(it as java.awt.Container) }
-    }
-
-    /**
-     * Determines whether an AWT Window is the IntelliJ Settings dialog.
-     *
-     * The challenge:
-     *  - The Settings dialog is implemented as com.intellij.openapi.options.newEditor.SettingsDialog
-     *  - But it is wrapped by DialogWrapperPeerImpl, whose inner class $MyDialog is the
-     *    actual AWT Window that appears in Window.getWindows()
-     *  - So window.javaClass.name == "...DialogWrapperPeerImpl$MyDialog", not "SettingsDialog"
-     *  - The SettingsDialog reference is held in the outer class, accessible via "this$0"
-     *
-     * Verified via UI Inspector: dialogWrapperClass = com.intellij.openapi.options.newEditor.SettingsDialog
-     *
-     * Fallback heuristic (if reflection is blocked by the module system):
-     *  - Matches on known class name patterns — less precise but covers the common case
-     */
-    private fun isSettingsDialog(window: Window): Boolean {
-        return try {
-            // "this$0" is the Java compiler's name for the outer class reference in an inner class.
-            // DialogWrapperPeerImpl$MyDialog holds a reference to the DialogWrapper (SettingsDialog).
-            val outerClassField = window.javaClass.getDeclaredField("this$0")
-            outerClassField.isAccessible = true
-            val outerInstance = outerClassField.get(window)
-            outerInstance?.javaClass?.name?.contains("SettingsDialog") == true
-        } catch (e: Exception) {
-            // Reflection may fail if: field renamed, module access denied, or obfuscated build
-            println("OpenMyChatKeymapAction:isSettingsDialog — reflection failed: $e")
-
-            // Heuristic fallback: match on known class name structure
-            // Less precise: any inner class of DialogWrapperPeerImpl named MyDialog qualifies
-            window.javaClass.name.contains("MyDialog") &&
-                    window.javaClass.enclosingClass?.name?.contains("DialogWrapperPeerImpl") == true
-        }
+            .asSequence()
+            .filter { it.isVisible }.firstNotNullOfOrNull { findSearchFieldUnderKeymapPanel(it as Container) }
     }
 
     /**
@@ -186,13 +152,13 @@ class OpenMyChatKeymapAction : AbstractBrowserAction() {
      * separate for clarity and to make it easier to add KeymapPanel-specific logic later
      * (e.g., waiting for the panel to finish loading before searching).
      */
-    private fun findSearchFieldUnderKeymapPanel(container: java.awt.Container): SearchTextField? {
+    private fun findSearchFieldUnderKeymapPanel(container: Container): SearchTextField? {
         for (child in container.components) {
             if (child is KeymapPanel) {
                 // Found the KeymapPanel — now look for the filter field inside it only
                 return findFirstSearchTextField(child)
             }
-            if (child is java.awt.Container) {
+            if (child is Container) {
                 val result = findSearchFieldUnderKeymapPanel(child)
                 if (result != null) return result
             }
@@ -211,10 +177,10 @@ class OpenMyChatKeymapAction : AbstractBrowserAction() {
      * DFS traversal order matches the component rendering order,
      * so the first found is always the topmost/leftmost visible field.
      */
-    private fun findFirstSearchTextField(container: java.awt.Container): SearchTextField? {
+    private fun findFirstSearchTextField(container: Container): SearchTextField? {
         for (child in container.components) {
             if (child is SearchTextField) return child
-            if (child is java.awt.Container) {
+            if (child is Container) {
                 val result = findFirstSearchTextField(child)
                 if (result != null) return result
             }
