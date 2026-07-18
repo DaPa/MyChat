@@ -5,11 +5,18 @@
 
 ## Nice hints
 
+### JCEF debug logging
+1. Go to Help | Edit Custom VM Options, add the following as a new line there, then restart the IDE:
+2. -Dide.browser.jcef.log.level=verbose
+3. see https://youtrack.jetbrains.com/articles/SUPPORT-A-43/How-to-enable-debug-logging-in-IntelliJ-IDEA
+
 ### GUI inspection (enable "Internal Mode")
 1. from menu Help → Edit Custom VM Options... → add: "-Didea.is.internal=true" (in idea64.exe.vmoptions)
 2. then "Ctrl+Alt+Click" on any GUI element to inspect
 
 ### JCEF remote debugging
+See https://github.com/hltj/intellij/blob/master/reference_guide/jcef.md
+
 1. "build.gradle.kts" adds "-Dide.browser.jcef.debug.port=9222" JVM property to IDE run configuration (idea64.exe.vmoptions)
 2. Start a remote debugging session in Chrome: chrome://inspect/#devices
 3. Check only "Discover network targets"
