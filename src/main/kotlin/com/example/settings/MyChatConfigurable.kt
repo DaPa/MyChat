@@ -23,7 +23,7 @@ import javax.swing.table.TableCellEditor
 /**
  * Settings UI for MyChat plugin: Settings → Other Settings → MyChat
  *
- * Displays a table with columns: Icon | Name | URL | Button
+ * Displays a table with columns: Icon | Name | URL
  *
  * Icon column behavior:
  *  - Renders the current icon (loaded from iconPath)
@@ -42,7 +42,6 @@ class MyChatConfigurable : Configurable {
         private const val COL_ICON = 0
         private const val COL_NAME = 1
         private const val COL_URL = 2
-        private const val COL_BUTTON = 3
 
         // Icon column is narrow — just wide enough for a 16×16 icon + padding
         private const val ICON_COL_WIDTH = 32
@@ -52,7 +51,7 @@ class MyChatConfigurable : Configurable {
     }
 
     /**
-     * Table model with 4 columns: Icon (String path), Name, URL, Button.
+     * Table model with 4 columns: Icon (String path), Name, URL.
      *
      * The Icon column stores a String (the iconPath), not an Icon object.
      * The custom renderer paints the actual icon; the editor opens a file chooser.
@@ -61,11 +60,11 @@ class MyChatConfigurable : Configurable {
      * rendering booleans as checkboxes or Icons as labels unexpectedly.
      */
     private val model = object : DefaultTableModel(
-        arrayOf("Icon", "Name", "URL", "Button"), 0
+        arrayOf("Icon", "Name", "URL"), 0
     ) {
         // All columns are editable:
         //  - COL_ICON   → IconCellEditor opens a file chooser on single click
-        //  - COL_NAME, COL_URL, COL_BUTTON → default inline text editor
+        //  - COL_NAME, COL_URL → default inline text editor
         // ❗ `column != COL_ICON` was wrong — it accidentally disabled the icon editor
         //    entirely, so clicks on the icon column did nothing.
         override fun isCellEditable(row: Int, column: Int): Boolean = true
@@ -108,7 +107,7 @@ class MyChatConfigurable : Configurable {
         val tablePanel = ToolbarDecorator.createDecorator(table)
             .setAddAction {
                 // New row: no icon by default (empty path → generic icon shown by renderer)
-                model.addRow(arrayOf("", "", "", ""))
+                model.addRow(arrayOf("", "", ""))
             }
             .setRemoveAction {
                 val row = table.selectedRow
@@ -135,7 +134,6 @@ class MyChatConfigurable : Configurable {
             if (model.getValueAt(i, COL_ICON) as String != site.iconPath) return true
             if (model.getValueAt(i, COL_NAME) as String != site.name) return true
             if (model.getValueAt(i, COL_URL) as String != site.url) return true
-            if (model.getValueAt(i, COL_BUTTON) as String != site.button) return true
         }
         return false
     }
@@ -151,14 +149,13 @@ class MyChatConfigurable : Configurable {
         for (i in 0 until model.rowCount) {
             val name = model.getValueAt(i, COL_NAME) as String
             val url = model.getValueAt(i, COL_URL) as String
-            val btn = model.getValueAt(i, COL_BUTTON) as String
             val path = model.getValueAt(i, COL_ICON) as String
 
             require(name.isNotBlank()) { "Name cannot be empty (row ${i + 1})" }
             require(url.isNotBlank()) { "URL cannot be empty (row ${i + 1})" }
 
             // icon = null: transient cache, will be re-resolved from iconPath on next resolveIcon()
-            newList.add(MyChatSettings.SiteConfig(iconPath = path, name = name, url = url, button = btn))
+            newList.add(MyChatSettings.SiteConfig(iconPath = path, name = name, url = url))
         }
 
         state.sites = newList
@@ -171,7 +168,7 @@ class MyChatConfigurable : Configurable {
     override fun reset() {
         model.rowCount = 0
         MyChatSettings.getInstance().state.sites.forEach { site ->
-            model.addRow(arrayOf(site.iconPath, site.name, site.url, site.button))
+            model.addRow(arrayOf(site.iconPath, site.name, site.url))
         }
     }
 
@@ -185,7 +182,7 @@ class MyChatConfigurable : Configurable {
 
         model.rowCount = 0
         MyChatSettings.defaultSites().forEach { site ->
-            model.addRow(arrayOf(site.iconPath, site.name, site.url, site.button))
+            model.addRow(arrayOf(site.iconPath, site.name, site.url))
         }
     }
 

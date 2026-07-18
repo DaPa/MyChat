@@ -30,7 +30,6 @@ class MyChatSettings : PersistentStateComponent<MyChatSettings.State> {
         var iconPath: String = "",   // persisted: classpath resource or absolute file path
         var name: String = "",
         var url: String = "",
-        var button: String = "",
     ) {
         // Transient: derived from iconPath at runtime, never serialized.
         // Loaded on first access via loadIcon().
@@ -91,22 +90,22 @@ class MyChatSettings : PersistentStateComponent<MyChatSettings.State> {
                     IconLoader.getIcon(file.toURI().toURL().toString(), MyChatSettings::class.java)
                 }
             } catch (e: Exception) {
-                println("MyChatSettings: failed to load icon from '$path': ${e.message}")
+                //println("MyChatSettings: failed to load icon from '$path': ${e.message}")
                 null
             }
         }
 
         fun defaultSites(): MutableList<SiteConfig> = mutableListOf(
-            SiteConfig("/icons/Copilot.svg", "Copilot", "https://m365.cloud.microsoft/chat", "PlusMenuButton"),
-            SiteConfig("/icons/ChatGPT.svg", "ChatGPT", "https://chatgpt.com", "composer-plus-btn"),
-            SiteConfig("/icons/Claude.svg", "Claude", "https://claude.ai", "button"),
-            SiteConfig("/icons/Perplexity.svg", "Perplexity", "https://www.perplexity.ai", "button"),
-            SiteConfig("/icons/Grok.svg", "Grok", "https://grok.com", "button"),
-            SiteConfig("/icons/ManusIM.svg", "Manus", "https://manus.im", "button"),
-            SiteConfig("/icons/Gemini.svg", "Gemini", "https://gemini.google.com/app", "button"),
-            SiteConfig("/icons/Google.svg", "Google", "https://google.com/ai", "button"),
-            SiteConfig("/icons/DuckDuckGo.svg", "Duck", "https://duck.ai/chat", "button"),
-            SiteConfig("/icons/generic.svg", "generic", "https://start.duckduckgo.com", "button"),
+            SiteConfig("/icons/Copilot.svg", "Copilot", "https://m365.cloud.microsoft/chat"),
+            SiteConfig("/icons/ChatGPT.svg", "ChatGPT", "https://chatgpt.com"),
+            SiteConfig("/icons/Claude.svg", "Claude", "https://claude.ai"),
+            SiteConfig("/icons/Perplexity.svg", "Perplexity", "https://www.perplexity.ai"),
+            SiteConfig("/icons/Grok.svg", "Grok", "https://grok.com"),
+            SiteConfig("/icons/ManusIM.svg", "Manus", "https://manus.im"),
+            SiteConfig("/icons/Gemini.svg", "Gemini", "https://gemini.google.com/app"),
+            SiteConfig("/icons/Google.svg", "Google", "https://google.com/ai"),
+            SiteConfig("/icons/DuckDuckGo.svg", "Duck", "https://duck.ai/chat"),
+            SiteConfig("/icons/generic.svg", "generic", "https://start.duckduckgo.com"),
         )
     }
 

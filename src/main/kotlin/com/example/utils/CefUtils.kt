@@ -39,10 +39,6 @@ val SUPPRESSED_CONSOLE_PATTERNS: List<String> = listOf(
  *  - Suppresses console messages matching any pattern in [SUPPRESSED_CONSOLE_PATTERNS]
  *  - Forwards all other messages to IntelliJ's [Logger] at INFO level
  *
- * Must be called once per browser instance, not inside `onLoadEnd` —
- * registering inside `onLoadEnd` would add a new handler on every page navigation,
- * causing duplicate log lines that multiply without a bound.
- *
  * Extracted from MyChatWindowFactory so any future CEF-embedding tool window
  * can suppress the same noisy patterns with a single call.
  *

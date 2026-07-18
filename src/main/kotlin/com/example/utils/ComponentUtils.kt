@@ -14,21 +14,14 @@ internal object ComponentUtils {
      * easy to tune if a site is slower than average.
      */
     private const val ATTACH_BTN_REVEAL_DELAY_MS = 300
-    private const val OBSERVER_TIMEOUT_MS = 10_000
 
     private val INJECT_FILES_JS_TEMPLATE: String by lazy { loadJs("injectFiles.js") }
     private val FILE_BLOB_JS_TEMPLATE: String by lazy { loadJs("fileBlob.js") }
-    private val ON_LOAD_END_JS_TEMPLATE: String by lazy { loadJs("onLoadEnd.js") }
     private val MARKDOWN_JS_TEMPLATE: String by lazy { loadJs("markdown.js") }
 
     private fun buildMarkdownText(markdown: String): String =
         MARKDOWN_JS_TEMPLATE
             .replace("__ESCAPED_MARKDOWN_TEXT__", markdown)
-
-    fun buildOnLoadEndScript(plusBtnSelector: String): String =
-        ON_LOAD_END_JS_TEMPLATE
-            .replace("__PLUS_BTN_SELECTOR__", plusBtnSelector)
-            .replace("__OBSERVER_TIMEOUT_MS__", OBSERVER_TIMEOUT_MS.toString())
 
     /**
      * Loads the JS template from resources once and caches it.

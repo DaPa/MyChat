@@ -5,7 +5,6 @@ import com.example.settings.MyChatIcons
 import com.example.settings.MyChatSettings
 import com.example.ui.BrowserFindBar
 import com.example.ui.MyThemeListener
-import com.example.utils.ComponentUtils.buildOnLoadEndScript
 import com.example.utils.ComponentUtils.injectFilesViaJs
 import com.example.utils.acceptOrRejectFileDrop
 import com.example.utils.extractVirtualFiles
@@ -122,7 +121,7 @@ class MyChatWindowFactory : ToolWindowFactory {
     override fun init(toolWindow: ToolWindow) {
         toolWindow.stripeTitle = MyChatMessagesBundle.message("chatwindow.stripe.MyChatWindow")
         toolWindow.setIcon(MyChatIcons.toolWindow)
-        LOG.info("init")
+        //LOG.info("init")
     }
 
     /**
@@ -135,7 +134,7 @@ class MyChatWindowFactory : ToolWindowFactory {
      * Returning early silently skips content creation; the tool window opens but stays empty.
      */
     override fun createToolWindowContent(project: Project, toolWindow: ToolWindow) {
-        LOG.info("createToolWindowContent")
+        //LOG.info("createToolWindowContent")
         /**
          * JCEF is safe to access here because MyChatStartupActivity has already pre-warmed
          * JBCefApp (called isSupported() + getInstance()) in a post-startup context where
@@ -207,17 +206,6 @@ class MyChatWindowFactory : ToolWindowFactory {
         }
 
         /**
-         * The data-testid value of the "plus/attach" button for the currently loaded site.
-         * Updated by updateSiteConfig() on every page load.
-         * Empty string means no matching site was found — JS injection will query a null selector.
-         *
-         * @Volatile because it is written on the CEF I/O thread (onLoadEnd) and may be read
-         * from other threads. Using @Volatile avoids a data race without locking overhead.
-         */
-        @Volatile
-        private var currentPlusBtn: String = ""
-
-        /**
          * Resolves and caches the button selector for the given URL.
          * Called on every page load (onLoadEnd) to handle navigation between sites.
          *
@@ -229,9 +217,8 @@ class MyChatWindowFactory : ToolWindowFactory {
          */
         private fun updateSiteConfig(url: String) {
             val matched = findMatchingSite(url)
-            currentPlusBtn = matched?.button ?: ""
             if (matched != null) {
-                LOG.info("updateSiteConfig — matched site: ${matched.url} -> button: ${matched.button}")
+                LOG.info("updateSiteConfig — matched site: ${matched.url}")
                 currentSite = matched
             } else {
                 LOG.info("updateSiteConfig — no matching site for URL: $url")
@@ -251,8 +238,7 @@ class MyChatWindowFactory : ToolWindowFactory {
             MyChatSettings.getInstance().state.sites.firstOrNull() ?: MyChatSettings.SiteConfig(
                 "",
                 "ChatGPT",
-                "https://chatgpt.com",
-                "composer-plus-btn"
+                "https://chatgpt.com"
             )
 
         /**
@@ -346,9 +332,9 @@ class MyChatWindowFactory : ToolWindowFactory {
             browser = JBCefBrowser(currentSite.url)
             Disposer.register(this, browser)
 
-            println("cefLaunchDarkState   = $cefLaunchDarkState")
-            println("debug port = ${System.getProperty("ide.browser.jcef.debug.port")}")
-            println("cef args   = ${System.getProperty("ide.browser.jcef.command.line.args")}")
+            //println("cefLaunchDarkState   = $cefLaunchDarkState")
+            //println("debug port = ${System.getProperty("ide.browser.jcef.debug.port")}")
+            //println("cef args   = ${System.getProperty("ide.browser.jcef.command.line.args")}")
             //LOG.info("JCEF debug port = ${System.getProperty("ide.browser.jcef.debug.port")}")
             //LOG.info("JCEF command line args = ${System.getProperty("ide.browser.jcef.command.line.args")}")
 
@@ -535,24 +521,6 @@ class MyChatWindowFactory : ToolWindowFactory {
                     // Must happen before building the JS script below.
                     updateSiteConfig(currentUrl)
 
-                    LOG.info("onLoadEnd — injecting JS for button selector: '$currentPlusBtn'")
-
-                    /**
-                     * IIFE (Immediately Invoked Function Expression) to avoid polluting the
-                     * page's global JS namespace. Uses a MutationObserver to handle SPAs
-                     * (Single Page Applications) where the button may not exist in the DOM
-                     * immediately after the page load event fires.
-                     *
-                     * The observer disconnects itself once the button is found, or after a
-                     * 10-second timeout to prevent leaking memory in pages where the selector
-                     * never matches.
-                     *
-                     * currentPlusBtn is captured into a local val before interpolation so that
-                     * a concurrent write on the CEF I/O thread cannot change it mid-string-build.
-                     */
-                    val capturedSelector = currentPlusBtn
-                    val script = buildOnLoadEndScript(capturedSelector)
-                    cefBrowser.executeJavaScript(script, cefBrowser.url, 0)
                 }
 
             }, browser.cefBrowser)
