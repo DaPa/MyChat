@@ -120,6 +120,7 @@ class MyChatSettings : PersistentStateComponent<MyChatSettings.State> {
  */
 object MyChatIcons {
     val generic: Icon = "/icons/generic.svg".load()
+    val toolWindow: Icon = "/icons/toolWindow.svg".load()
 
     private fun String.load(): Icon =
         IconLoader.getIcon(this, MyChatIcons::class.java)

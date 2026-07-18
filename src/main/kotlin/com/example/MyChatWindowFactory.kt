@@ -1,6 +1,7 @@
 package com.example
 
 import com.example.browser.BrowserDataKeys
+import com.example.settings.MyChatIcons
 import com.example.settings.MyChatSettings
 import com.example.ui.BrowserFindBar
 import com.example.ui.MyThemeListener
@@ -120,6 +121,7 @@ class MyChatWindowFactory : ToolWindowFactory {
      */
     override fun init(toolWindow: ToolWindow) {
         toolWindow.stripeTitle = MyChatMessagesBundle.message("chatwindow.stripe.MyChatWindow")
+        toolWindow.setIcon(MyChatIcons.toolWindow)
         LOG.info("init")
     }
 
