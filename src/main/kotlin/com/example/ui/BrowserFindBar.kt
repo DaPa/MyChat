@@ -9,9 +9,12 @@ import com.intellij.openapi.util.text.HtmlChunk
 import javax.swing.JButton
 import com.intellij.util.ui.JBUI
 import com.intellij.ui.jcef.JBCefBrowser
+//import org.cef.browser.CefBrowser
+//import org.cef.handler.CefFindHandlerAdapter
 import java.awt.BorderLayout
 import java.awt.Dimension
 import java.awt.FlowLayout
+//import java.awt.Rectangle
 import javax.swing.Box
 import javax.swing.JCheckBox
 import javax.swing.JPanel
@@ -31,11 +34,31 @@ class BrowserFindBar(
 ) : JBPanel<BrowserFindBar>(BorderLayout()) {
 
     private val textField = JBTextField()
-    private val matchLabel = JBLabel()  // "0/0"  TODO: update this when CefFindHandler/CefFindHandlerAdapter or addFindHandler/onFindResult are available
+    private val matchLabel = JBLabel()  // "0/0"
+    // CRITICAL: CefFindHandler/CefFindHandlerAdapter and addFindHandler/onFindResult are NOT available
+    //  in the current JCEF version used by this project. Do NOT attempt to implement real-time
+    //  match counts (e.g., "1/5") until the JCEF version is upgraded to one that supports these APIs.
     private val matchCaseCheckBox = JCheckBox("Aa")
     private var lastSearchText: String? = null
 
     init {
+
+        // Note: Real-time match counting is disabled due to JCEF API limitations (no CefFindHandler).
+        /*
+        browser.jbCefClient.addFindHandler(object : CefFindHandlerAdapter() {
+            override fun onFindResult(
+                browser: CefBrowser?,
+                identifier: Int,
+                count: Int,
+                selectionRect: Rectangle?,
+                activeMatchOrdinal: Int,
+                finalUpdate: Boolean
+            ) {
+                updateMatchLabel(activeMatchOrdinal, count)
+            }
+        }, browser.cefBrowser)
+        */
+
         border = JBUI.Borders.empty(4)
 
         matchLabel.preferredSize = Dimension(45, matchLabel.preferredSize.height)
@@ -175,7 +198,7 @@ class BrowserFindBar(
     }
 
 
-    // TODO: update this when CefFindHandler/CefFindHandlerAdapter or addFindHandler/onFindResult are available
+    // This method currently remains unused due to JCEF API limitations (no CefFindHandler).
     private fun updateMatchLabel(
         activeMatchOrdinal: Int,
         count: Int

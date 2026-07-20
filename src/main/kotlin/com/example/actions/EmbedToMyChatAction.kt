@@ -13,9 +13,6 @@ import com.intellij.openapi.diagnostic.Logger
  * Embed the currently active editor file(s) to the MyChat browser.
  * Works from the editor tab context menu, main menu, or keyboard shortcut.
  */
-// TODO: ChatGPT (and some other sites) may retain previously injected text in its input area
-// when the IDE is restarted. Investigate if there is a reliable way to clear the chat
-// input via JS before injection.
 class EmbedToMyChatAction : AbstractFileAction() {
 
     companion object {
@@ -28,9 +25,9 @@ class EmbedToMyChatAction : AbstractFileAction() {
 
         val editor = e.getData(CommonDataKeys.EDITOR)
         if (editor != null && e.place == ActionPlaces.EDITOR_POPUP && editor.selectionModel.hasSelection()) {
-            e.presentation.text = "- Embed Selection"
+            e.presentation.text = "Embed Selection"
         } else {
-            e.presentation.text = "- Embed To"
+            e.presentation.text = "Embed To Chat"
         }
     }
 

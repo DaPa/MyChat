@@ -138,6 +138,11 @@ internal object ComponentUtils {
     fun injectContentAsMarkdown(browser: JBCefBrowser, files: List<File>) {
         val markdown = buildString {
             for (file in files) {
+                val size = file.length()
+                if (size > 5_000_000) {
+                    LOG.warn("injectContentAsMarkdown — skipping ${file.name}: size $size bytes > 5MB")
+                    continue
+                }
                 val ext = file.extension.lowercase()
                 val lang = extToMarkdownLang(ext)
                 append("**${file.name}**\n")
@@ -146,6 +151,7 @@ internal object ComponentUtils {
                 append("\n```\n\n")
             }
         }
+        if (markdown.isBlank()) return
         val escaped = escapeForJsTemplateLiteral(markdown)
         val js = buildMarkdownText(escaped)
         browser.cefBrowser.executeJavaScript(js, browser.cefBrowser.url, 0)

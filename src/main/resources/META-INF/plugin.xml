@@ -13,8 +13,8 @@
     <!-- Description of the plugin displayed on the Plugin Page and IDE Plugin Manager.
          Guidelines: https://plugins.jetbrains.com/docs/marketplace/best-practices-for-listing.html#plugin-description -->
     <description><![CDATA[
-        <b>MyChat</b> is a simple browser plug-in that makes it easy<br>
-        <em>to open a web page in the editor.</em>
+        <b>MyChat</b> integrates popular AI chat services (ChatGPT, Claude, Gemini, etc.)
+        directly into your IDE via a tool window, enabling seamless file and code integration.
         ]]></description>
 
     <!-- Product and plugin compatibility requirements.
@@ -160,7 +160,7 @@
 
             <action id="MyChat.SendToMyChat"
                     class="com.example.actions.SendToMyChatAction"
-                    text="- Send To"
+                    text="Send To Chat"
                     description="Send the current file to the MyChat browser"
                     icon="AllIcons.Actions.Upload">
                 <keyboard-shortcut keymap="$default" first-keystroke="alt M"/>
@@ -168,7 +168,7 @@
 
             <action id="MyChat.EmbedToMyChat"
                     class="com.example.actions.EmbedToMyChatAction"
-                    text="- Embed To"
+                    text="Embed To Chat"
                     description="Embed the current file to the MyChat browser"
                     icon="AllIcons.Actions.Upload">
                 <keyboard-shortcut keymap="$default" first-keystroke="alt E"/>

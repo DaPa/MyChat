@@ -48,3 +48,8 @@ Since AI chat websites are designed for human interaction via a standard browser
 ### Debugging
 - Press `F12` while the MyChat window is focused to open the **CEF DevTools**.
 - Check `HINTS.md` for advanced tips on JCEF logging and remote debugging.
+
+## Technical Limitations
+
+- **Browser Find Bar**: The current implementation of the inline search bar does not show real-time match counts (e.g., "1/5") due to limitations in the version of JCEF available in the target IntelliJ platform.
+- **Site Compatibility**: JavaScript injection depends on CSS selectors. If an AI service updates its website layout, injection might require an update in `ComponentUtils.kt`.

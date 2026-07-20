@@ -80,14 +80,15 @@ class MyChatSettings : PersistentStateComponent<MyChatSettings.State> {
         fun loadIcon(path: String): Icon? {
             if (path.isBlank()) return null
             return try {
-                if (path.startsWith("/") && !java.io.File(path).exists()) {
+                val file = java.io.File(path)
+                if (file.exists()) {
+                    // Treat as absolute filesystem path (user-supplied icon)
+                    IconLoader.getIcon(file.toURI().toURL().toString(), MyChatSettings::class.java)
+                } else if (path.startsWith("/")) {
                     // Treat as classpath resource (bundled icon)
                     IconLoader.getIcon(path, MyChatSettings::class.java)
                 } else {
-                    // Treat as absolute filesystem path (user-supplied icon)
-                    val file = java.io.File(path)
-                    if (!file.exists()) return null
-                    IconLoader.getIcon(file.toURI().toURL().toString(), MyChatSettings::class.java)
+                    null
                 }
             } catch (e: Exception) {
                 //println("MyChatSettings: failed to load icon from '$path': ${e.message}")

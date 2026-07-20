@@ -4,39 +4,17 @@
 
 ## [Unreleased]
 
-Checkmarks: ✅ ✔ ✓ ☑ 🗸
+### Added
+- Added a 5MB file size limit to content injection to prevent IDE memory issues.
 
-Cross: ❌ ✖ ✗ ⨯ 🚫 ⛔
+### Changed
+- Improved plugin description in `plugin.xml` for better clarity.
+- Renamed "Send To" and "Embed To" actions to "Send To Chat" and "Embed To Chat" for a cleaner UI.
+- Improved icon loading logic to be more robust across different operating systems.
+- Updated documentation and internal TODOs.
 
-Status: 🟢 🟡 🔴 ⚪ ⚫ 🔵 🟠 🟣
-
-Squares: 🟩 🟨 🟥 ⬜ ⬛ 🟦 🟧
-
-Diamonds: 🔹 🔸 🔷 🔶 ◆ ◇
-
-Numbers: ① ② ③ ④ ⑤ ⑥ ⑦ ⑧ ⑨ ⑩, ⓵ ⓶ ⓷ ⓸ ⓹
-
-Numbers: ❷ ❸ ❹ ❺ ❻ ❼ ❽ ❾ ❿
-
-Numbers: 0️⃣ 1️⃣ 2️⃣ 3️⃣ 4️⃣ 5️⃣ 6️⃣ 7️⃣ 8️⃣ 9️⃣ 🔟
-
-Letters: 🄰 🄱 🄲 🄳 🄴
-
-Words: 🅰️ 🅱️ 🆎 🆑 🆒 🆓 🆔 🆕 🆖 🆗 🆘 🆙 🆚
-
-Warnings: ⚠ ⚠️ ❗ ❕ 🚨
-
-Notes: 💡 ℹ 🛈 📝 ✍ 🔍
-
-Arrows: → ← ↑ ↓ ↔ ⇒ ⇐ ⇨ ➜ ➝ ➤ ⇢ ⟶ ↦
-
-Useful: 🎉 🚀 ✨ 🌟 ★ ☆ ✦ ✧ ⏳ ⌛ ⏱ ⏲ 🔒 🔓 🔑 📌 📍
-
-Critical: 🚨 🛑 ❗ ❗️ ⛔ 🔥
-
-Warning: ⚠ ⚠️ ⚡ ☢ ☣
-
-Time: ⏱ ⏲ ⌛ ⏳ 🐢 🚀
-
-Settings: ⚙ 🔧 🛠
+## [1.0.0] - 2026-07-20
+- Initial release with support for various AI chat services.
+- Seamless file and code selection integration via JS injection.
+- Dark mode support and customizable site configurations.
 

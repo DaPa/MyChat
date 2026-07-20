@@ -1,4 +1,4 @@
-# Agent Guide for MyChat Project
+# Agent’s Guide for MyChat Project
 
 This document provides technical details and a mapping of features to implementation files to help AI agents (and developers) quickly navigate and understand the codebase.
 
@@ -9,6 +9,7 @@ The plugin uses `JBCefBrowser` to host the web-based chat services.
 - **Initialization**: `MyChatWindow` sets up the browser and its handlers.
 - **Arguments**: Custom CEF arguments are provided via `MyChatCefArgsProvider` (e.g., for dark mode, GPU handling).
 - **Locator**: Use `BrowserLocator` or `ActionUtils.getBrowser(e)` to find the browser instance.
+- **Limitations**: The current JCEF version used in the project **does not support `CefFindHandler`**. Do NOT attempt to implement real-time match counts (e.g., "1/5") in the find bar using `onFindResult`, as the API is missing/unavailable.
 
 ### 2. Interaction via JavaScript Injection
 Most "smart" features are implemented by executing JavaScript within the browser.
