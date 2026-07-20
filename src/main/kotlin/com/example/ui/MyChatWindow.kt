@@ -103,16 +103,19 @@ class MyChatWindow(private val project: Project) : Disposable {
 
     /**
      * Returns the first configured site, falling back to ChatGPT defaults.
+     * Marked as @Volatile because it is updated from CEF threads (onLoadEnd)
+     * and read from BGT (uiDataSnapshot for action updates).
      */
-    private var currentSite: MyChatSettings.SiteConfig =
+    @Volatile
+    internal var currentSite: MyChatSettings.SiteConfig =
         MyChatSettings.getInstance().state.sites.firstOrNull() ?: MyChatSettings.SiteConfig(
             "",
             "ChatGPT",
             "https://chatgpt.com"
         )
 
-    private lateinit var browser: JBCefBrowser
-    private lateinit var findBar: BrowserFindBar
+    internal lateinit var browser: JBCefBrowser
+    internal lateinit var findBar: BrowserFindBar
     private var dndTarget: DnDNativeTarget? = null
 
     private val cefLaunchDarkState = LafManager.getInstance().currentUIThemeLookAndFeel.isDark

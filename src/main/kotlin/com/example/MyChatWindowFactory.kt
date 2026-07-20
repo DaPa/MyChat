@@ -1,5 +1,6 @@
 package com.example
 
+import com.example.browser.BrowserLocator
 import com.example.settings.MyChatIcons
 import com.example.ui.MyChatWindow
 import com.intellij.openapi.application.ApplicationManager
@@ -97,6 +98,7 @@ class MyChatWindowFactory : ToolWindowFactory {
          */
         val content = ContentFactory.getInstance().createContent(myToolWindow.getContent(), null, false)
         content.setDisposer(myToolWindow)
+        content.putUserData(BrowserLocator.MY_CHAT_WINDOW_KEY, myToolWindow)
         toolWindow.contentManager.addContent(content)
     }
 
