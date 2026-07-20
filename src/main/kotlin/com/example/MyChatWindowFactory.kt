@@ -3,6 +3,7 @@ package com.example
 import com.example.browser.BrowserLocator
 import com.example.settings.MyChatIcons
 import com.example.ui.MyChatWindow
+import com.intellij.ide.plugins.PluginManager
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.wm.ToolWindow
@@ -62,7 +63,10 @@ class MyChatWindowFactory : ToolWindowFactory {
      * Note: init() runs even if the user never opens the tool window.
      */
     override fun init(toolWindow: ToolWindow) {
-        toolWindow.stripeTitle = MyChatMessagesBundle.message("chatwindow.stripe.MyChatWindow")
+        val baseTitle = MyChatMessagesBundle.message("chatwindow.stripe.MyChatWindow")
+        val version = PluginManager.getPluginByClass(this::class.java)?.version ?: ""
+        toolWindow.stripeTitle = if (version.isNotEmpty()) "$baseTitle $version" else baseTitle
+
         toolWindow.setIcon(MyChatIcons.toolWindow)
         //LOG.info("init")
     }
