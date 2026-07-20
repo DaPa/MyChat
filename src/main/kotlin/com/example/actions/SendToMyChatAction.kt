@@ -1,14 +1,14 @@
 package com.example.actions
 
-import com.example.browser.BrowserDataKeys
-import com.example.browser.BrowserLocator
 import com.example.utils.ComponentUtils.injectFilesViaJs
-import com.example.utils.resolveIoFile
+import com.example.utils.getBrowser
+import com.example.utils.getCurrentSite
+import com.example.utils.resolveIoFiles
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.diagnostic.Logger
 
 /**
- * Sends the currently active editor file to the MyChat browser.
+ * Sends the currently active editor file(s) to the MyChat browser.
  * Works from the editor tab context menu, main menu, or keyboard shortcut.
  */
 class SendToMyChatAction : AbstractFileAction() {
@@ -18,14 +18,12 @@ class SendToMyChatAction : AbstractFileAction() {
     }
 
     override fun actionPerformed(e: AnActionEvent) {
-        val project = e.project ?: return
-        val ioFile = e.resolveIoFile() ?: return
-        val dataContext = BrowserLocator.dataContext(project) ?: return
-        val browser = BrowserDataKeys.BROWSER.getData(dataContext) ?: return
-        val currentSite = BrowserDataKeys.CURRENT_SITE.getData(dataContext) ?: return
+        val browser = e.getBrowser() ?: return
+        val files = e.resolveIoFiles().takeIf { it.isNotEmpty() } ?: return
+        val currentSite = e.getCurrentSite()
 
-        LOG.info("SendToMyChat — file: ${ioFile.name}")
-        injectFilesViaJs(browser, listOf(ioFile), currentSite)
+        LOG.info("SendToMyChat — files: ${files.map { it.name }}")
+        injectFilesViaJs(browser, files, currentSite)
     }
 
 }
