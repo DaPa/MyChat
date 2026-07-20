@@ -133,6 +133,20 @@ internal object ComponentUtils {
         browser.cefBrowser.executeJavaScript(js, browser.cefBrowser.url, 0)
     }
 
+    fun injectSelectionAsMarkdown(browser: JBCefBrowser, filename: String, selection: String) {
+        val ext = filename.substringAfterLast('.', "").lowercase()
+        val lang = extToMarkdownLang(ext)
+        val markdown = buildString {
+            append("**$filename (selection)**\n")
+            append("```$lang\n")
+            append(selection)
+            append("\n```\n\n")
+        }
+        val escaped = escapeForJsTemplateLiteral(markdown)
+        val js = buildMarkdownText(escaped)
+        browser.cefBrowser.executeJavaScript(js, browser.cefBrowser.url, 0)
+    }
+
     private fun cleanupTempFiles(files: List<File>) {
         files.forEach {
             val deleted = it.delete()
