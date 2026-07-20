@@ -9,6 +9,10 @@ import com.intellij.openapi.actionSystem.CommonDataKeys
 import com.intellij.ui.jcef.JBCefBrowser
 import java.io.File
 
+/**
+ * Retrieves the [JBCefBrowser] instance associated with the current action event.
+ * It first checks the event's data context, then falls back to locating it via [BrowserLocator].
+ */
 fun AnActionEvent.getBrowser(): JBCefBrowser? {
     val browser = getData(BrowserDataKeys.BROWSER)
     if (browser != null) return browser
@@ -18,6 +22,9 @@ fun AnActionEvent.getBrowser(): JBCefBrowser? {
     return BrowserDataKeys.BROWSER.getData(dataContext)
 }
 
+/**
+ * Retrieves the [MyChatSettings.SiteConfig] for the site currently loaded in the browser.
+ */
 fun AnActionEvent.getCurrentSite(): MyChatSettings.SiteConfig? {
     val site = getData(BrowserDataKeys.CURRENT_SITE)
     if (site != null) return site
@@ -27,14 +34,24 @@ fun AnActionEvent.getCurrentSite(): MyChatSettings.SiteConfig? {
     return BrowserDataKeys.CURRENT_SITE.getData(dataContext)
 }
 
+/**
+ * Retrieves the [BrowserFindBar] associated with the browser.
+ */
 fun AnActionEvent.getFindBar(): BrowserFindBar? {
     return getData(BrowserDataKeys.FIND_BAR)
 }
 
+/**
+ * Returns the home URL of the current site configuration.
+ */
 fun AnActionEvent.getHomeUrl(): String? {
     return getData(BrowserDataKeys.CURRENT_SITE)?.url
 }
 
+/**
+ * Resolves the [File] objects for the virtual files associated with the action event.
+ * Filters out directories and ensures files exist on the local file system.
+ */
 fun AnActionEvent.resolveIoFiles(): List<File> {
     val vfs = getData(CommonDataKeys.VIRTUAL_FILE_ARRAY)
         ?: getData(CommonDataKeys.VIRTUAL_FILE)?.let { arrayOf(it) }

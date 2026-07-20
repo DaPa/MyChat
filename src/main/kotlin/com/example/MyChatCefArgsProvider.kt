@@ -10,7 +10,6 @@ class MyChatCefArgsProvider : JBCefAppRequiredArgumentsProvider {
     override val options: List<String>
         get() {
             val dark = LafManager.getInstance().currentUIThemeLookAndFeel.isDark
-            //println("dark  = $dark")
             log.info("dark = $dark")
 
             return listOf(
@@ -18,8 +17,9 @@ class MyChatCefArgsProvider : JBCefAppRequiredArgumentsProvider {
                 else "--force-light-mode",
                 // Fixes "white window" and rendering issues for DevTools and popups on Windows.
                 // --disable-gpu-compositing: Avoids conflicts between main and secondary window GPU contexts.
-                // --disable-features=CalculateNativeWinOcclusion: Fixes Chromium misidentifying a window as hidden.
                 "--disable-gpu-compositing",
+                // --disable-features=CalculateNativeWinOcclusion: Fixes Chromium misidentifying a window as hidden.
+                // Currently commented out as --disable-gpu-compositing usually suffices.
                 //"--disable-features=CalculateNativeWinOcclusion",
             )
         }

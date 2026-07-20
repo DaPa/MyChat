@@ -13,7 +13,9 @@ import com.intellij.openapi.diagnostic.Logger
  * Embed the currently active editor file(s) to the MyChat browser.
  * Works from the editor tab context menu, main menu, or keyboard shortcut.
  */
-// TODO: ChatGPT retains previous embedded text when re-opening the IDE. How to clean it?
+// TODO: ChatGPT (and some other sites) may retain previously injected text in its input area
+// when the IDE is restarted. Investigate if there is a reliable way to clear the chat
+// input via JS before injection.
 class EmbedToMyChatAction : AbstractFileAction() {
 
     companion object {
@@ -35,6 +37,7 @@ class EmbedToMyChatAction : AbstractFileAction() {
     override fun actionPerformed(e: AnActionEvent) {
         val browser = e.getBrowser() ?: return
 
+        // Priority 1: If there is an active selection in the editor, embed only that.
         val editor = e.getData(CommonDataKeys.EDITOR)
         val selectionModel = editor?.selectionModel
         if (selectionModel != null && selectionModel.hasSelection()) {
@@ -47,6 +50,7 @@ class EmbedToMyChatAction : AbstractFileAction() {
             }
         }
 
+        // Priority 2: Fallback to embedding the entire file(s).
         val files = e.resolveIoFiles().takeIf { it.isNotEmpty() } ?: return
 
         LOG.info("EmbedToMyChatAction — files: ${files.map { it.name }}")

@@ -1,6 +1,8 @@
 <!-- Keep a Changelog guide -> https://keepachangelog.com -->
 
-3️⃣
+# MyChat Changelog
+
+## [Unreleased]
 
 Checkmarks: ✅ ✔ ✓ ☑ 🗸
 
@@ -38,8 +40,3 @@ Time: ⏱ ⏲ ⌛ ⏳ 🐢 🚀
 
 Settings: ⚙ 🔧 🛠
 
-: ...
-
-# MyChat Changelog
-
-## [Unreleased]

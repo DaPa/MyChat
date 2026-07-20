@@ -23,7 +23,10 @@ internal object ComponentUtils {
         MARKDOWN_JS_TEMPLATE
             .replace("__ESCAPED_MARKDOWN_TEXT__", markdown)
 
-    /** Selectors serialized once — order is the priority order. */
+    /**
+     * Selectors for "Attach" buttons on various AI chat sites.
+     * Order indicates priority. Includes localized strings for supported languages (e.g., Finnish "Lisää").
+     */
     private val SELECTORS_JS_ARRAY = listOf(
         "[aria-label*=\"Add files and more\"]",              // ChatGPT
         "[aria-label*=\"Add and manage sources\"]",          // Copilot
@@ -76,11 +79,22 @@ internal object ComponentUtils {
         return Pair(tempFile, true)
     }
 
+    /**
+     * Injects the specified files into the chat browser by creating File blobs and simulating
+     * a DataTransfer event. This method attempts to find an "Attach" button on the page
+     * and click it to reveal the file input if necessary.
+     *
+     * @param browser The browser instance to inject files into.
+     * @param files The list of files to be injected.
+     * @param currentSite The configuration of the current site, used for site-specific processing (e.g., Copilot).
+     */
     fun injectFilesViaJs(browser: JBCefBrowser, files: List<File>, currentSite: MyChatSettings.SiteConfig? = null) {
         val tempFiles = mutableListOf<File>()
         val fileBlobsJs = buildString {
             for (file in files) {
                 val size = file.length()
+                // Limit file size to avoid browser memory issues and comply with most AI service limits.
+                // Minimum 10 bytes to ignore empty/corrupt files.
                 if (size !in 10..5_000_000) {
                     LOG.warn("injectFilesViaJs — skipping ${file.name}: size $size bytes outside [10B, 5MB]")
                     continue
@@ -117,6 +131,10 @@ internal object ComponentUtils {
         cleanupTempFiles(tempFiles)
     }
 
+    /**
+     * Reads the content of the specified files and injects them into the chat browser
+     * formatted as Markdown code blocks.
+     */
     fun injectContentAsMarkdown(browser: JBCefBrowser, files: List<File>) {
         val markdown = buildString {
             for (file in files) {
@@ -133,6 +151,10 @@ internal object ComponentUtils {
         browser.cefBrowser.executeJavaScript(js, browser.cefBrowser.url, 0)
     }
 
+    /**
+     * Injects the provided text selection into the chat browser formatted as a Markdown code block,
+     * including the source filename.
+     */
     fun injectSelectionAsMarkdown(browser: JBCefBrowser, filename: String, selection: String) {
         val ext = filename.substringAfterLast('.', "").lowercase()
         val lang = extToMarkdownLang(ext)

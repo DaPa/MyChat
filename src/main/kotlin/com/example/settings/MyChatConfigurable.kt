@@ -154,7 +154,7 @@ class MyChatConfigurable : Configurable {
             require(name.isNotBlank()) { "Name cannot be empty (row ${i + 1})" }
             require(url.isNotBlank()) { "URL cannot be empty (row ${i + 1})" }
 
-            // icon = null: transient cache, will be re-resolved from iconPath on next resolveIcon()
+            // icon = null: transient cache will be resolved from iconPath on next resolveIcon()
             newList.add(MyChatSettings.SiteConfig(iconPath = path, name = name, url = url))
         }
 
