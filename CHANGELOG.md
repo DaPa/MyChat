@@ -13,6 +13,9 @@
 - Improved icon loading logic to be more robust across different operating systems.
 - Updated documentation and internal TODOs.
 
+## [1.0.1] - 2026-07-21
+- Avoid using "internal" PluginManager.getPluginByClass.
+
 ## [1.0.0] - 2026-07-20
 - Initial release with support for various AI chat services.
 - Seamless file and code selection integration via JS injection.
