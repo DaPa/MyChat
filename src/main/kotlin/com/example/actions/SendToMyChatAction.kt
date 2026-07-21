@@ -17,6 +17,13 @@ class SendToMyChatAction : AbstractFileAction() {
         private val LOG = Logger.getInstance(SendToMyChatAction::class.java)
     }
 
+    override fun update(e: AnActionEvent) {
+        super.update(e)
+        val hasRealFiles = e.resolveIoFiles().isNotEmpty()
+        e.presentation.isVisible = hasRealFiles
+        e.presentation.isEnabled = e.presentation.isEnabled && hasRealFiles
+    }
+
     override fun actionPerformed(e: AnActionEvent) {
         val browser = e.getBrowser() ?: return
         val files = e.resolveIoFiles().takeIf { it.isNotEmpty() } ?: return

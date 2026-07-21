@@ -113,12 +113,29 @@ class MyChatConfigurable : Configurable {
                 val row = table.selectedRow
                 if (row >= 0) model.removeRow(row)
             }
+            .setMoveUpAction {
+                moveSelectedRow(-1)
+            }
+            .setMoveDownAction {
+                moveSelectedRow(1)
+            }
             .createPanel()
 
         return JPanel(BorderLayout()).apply {
             add(createDefaultsToolbar(), BorderLayout.NORTH)
             add(tablePanel, BorderLayout.CENTER)
         }
+    }
+
+    private fun moveSelectedRow(direction: Int) {
+        val row = table.selectedRow
+        if (row < 0) return
+
+        val target = row + direction
+        if (target !in 0 until model.rowCount) return
+
+        model.moveRow(row, row, target)
+        table.setRowSelectionInterval(target, target)
     }
 
     /**

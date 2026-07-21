@@ -6,6 +6,7 @@ import com.example.settings.MyChatSettings
 import com.example.ui.BrowserFindBar
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.actionSystem.CommonDataKeys
+import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.ui.jcef.JBCefBrowser
 import java.io.File
 
@@ -60,4 +61,30 @@ fun AnActionEvent.resolveIoFiles(): List<File> {
     return vfs.filter { !it.isDirectory }
         .mapNotNull { vf -> vf.canonicalPath?.let { File(it) } }
         .filter { it.exists() }
+}
+
+/**
+ * Resolves the virtual files associated with the current action event.
+ *
+ * Supports both:
+ * - Single-file selections via [CommonDataKeys.VIRTUAL_FILE]
+ * - Multi-file selections via [CommonDataKeys.VIRTUAL_FILE_ARRAY]
+ *
+ * Directories are filtered out because MyChat actions currently operate on
+ * file content rather than folder structures.
+ *
+ * Unlike [resolveIoFiles], this method preserves non-local files such as:
+ * - jrt:// (JDK runtime files)
+ * - jar:// (library sources/classes)
+ * - decompiled class files
+ *
+ * @return All selected non-directory [VirtualFile]s, or an empty list if
+ * no file selection is available in the current action context.
+ */
+fun AnActionEvent.resolveVirtualFiles(): List<VirtualFile> {
+    val vfs = getData(CommonDataKeys.VIRTUAL_FILE_ARRAY)
+        ?: getData(CommonDataKeys.VIRTUAL_FILE)?.let(::arrayOf)
+        ?: return emptyList()
+
+    return vfs.filter { !it.isDirectory }
 }

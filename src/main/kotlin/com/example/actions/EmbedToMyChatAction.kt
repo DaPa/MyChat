@@ -23,12 +23,16 @@ class EmbedToMyChatAction : AbstractFileAction() {
         super.update(e)
         if (!e.presentation.isVisible || !e.presentation.isEnabled) return
 
+        e.presentation.text = "Embed To Chat"
+        val hasRealFiles = e.resolveIoFiles().isNotEmpty()
+        var enable = hasRealFiles
         val editor = e.getData(CommonDataKeys.EDITOR)
         if (editor != null && e.place == ActionPlaces.EDITOR_POPUP && editor.selectionModel.hasSelection()) {
+            enable = true
             e.presentation.text = "Embed Selection"
-        } else {
-            e.presentation.text = "Embed To Chat"
         }
+        e.presentation.isVisible = enable
+        e.presentation.isEnabled = e.presentation.isEnabled && enable
     }
 
     override fun actionPerformed(e: AnActionEvent) {
