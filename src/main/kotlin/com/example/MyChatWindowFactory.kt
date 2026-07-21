@@ -10,23 +10,7 @@ import com.intellij.openapi.wm.ToolWindow
 import com.intellij.openapi.wm.ToolWindowFactory
 import com.intellij.ui.content.ContentFactory
 import com.intellij.ui.jcef.JBCefApp
-
-/**
- * Tracks whether JCEF has been safely pre-initialized by MyChatStartupActivity.
- *
- * Why top-level (not in companion object):
- *  IntelliJ warns that ToolWindowFactory companion objects may only contain a logger
- *  and compile-time constants (const val). A @Volatile var is not a constant, so it
- *  must live outside the companion. Top-level scope in Kotlin compiles to a static
- *  field on a file-level class, which is equally accessible from MyChatStartupActivity.
- *
- * Why @Volatile:
- *  MyChatStartupActivity sets this from the EDT (via invokeLater).
- *  shouldBeAvailable() may be read from any thread by the platform.
- *  @Volatile ensures writes are immediately visible across threads without locking.
- */
-@Volatile
-var myChatJcefReady: Boolean = false
+import com.example.services.MyChatProjectState
 
 /**
  * Factory class registered in plugin.xml via <toolWindow factoryClass=...>.
@@ -52,10 +36,12 @@ class MyChatWindowFactory : ToolWindowFactory {
     }
 
     /**
+     * Tracks whether JCEF has been safely pre-initialized by MyChatStartupActivity.
      * Returns false until MyChatStartupActivity sets jcefReady=true (post-full platform init).
      * Prevents createToolWindowContent() being called before JCEF services are ready.
      */
-    override fun shouldBeAvailable(project: Project) = myChatJcefReady
+    override fun shouldBeAvailable(project: Project): Boolean =
+        MyChatProjectState.getInstance(project).jcefReady
 
     /**
      * Called once when the tool window is registered, before content is created.

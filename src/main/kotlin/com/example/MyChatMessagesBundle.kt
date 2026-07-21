@@ -5,9 +5,10 @@ import org.jetbrains.annotations.Nls
 import org.jetbrains.annotations.PropertyKey
 import java.util.function.Supplier
 
-private const val BUNDLE = "messages.MyChatMessagesBundle"  // points to "resources/messages/MyChatMessagesBundle.properties"
-
 internal object MyChatMessagesBundle {
+    // points to "resources/messages/MyChatMessagesBundle.properties"
+    private const val BUNDLE = "messages.MyChatMessagesBundle"
+
     // DynamicBundle is a JetBrains platform utility class used for internationalization (i18n) in IntelliJ-based plugins.
     private val instance = DynamicBundle(MyChatMessagesBundle::class.java, BUNDLE)
 

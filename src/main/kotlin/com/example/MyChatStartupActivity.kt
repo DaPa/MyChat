@@ -8,6 +8,7 @@ import com.intellij.openapi.startup.ProjectActivity
 import com.intellij.openapi.wm.ToolWindowManager
 import com.intellij.ui.jcef.JBCefApp
 import java.io.File
+import com.example.services.MyChatProjectState
 
 /**
  * Runs after the IDE is fully initialized — all services including ProxyMigrationService
@@ -82,8 +83,8 @@ class MyChatStartupActivity : ProjectActivity, DumbAware {
 
             LOG.info("JCEF ready — marking MyChat tool window available.")
 
-            // Set the flag so shouldBeAvailable() now returns true.
-            myChatJcefReady = true
+            // Mark JCEF as ready, so shouldBeAvailable() now returns true.
+            MyChatProjectState.getInstance(project).jcefReady = true
 
             ToolWindowManager.getInstance(project)
                 .getToolWindow(MyChatWindowFactory.TOOL_WINDOW_ID)?.isAvailable = true
