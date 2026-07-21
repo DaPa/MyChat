@@ -2,6 +2,13 @@
 
 MyChat is an IntelliJ IDEA plugin that integrates popular AI chat services (like ChatGPT, Claude, Copilot, Gemini, and more) directly into your IDE via a tool window. It enables seamless integration between your code and AI assistants, allowing you to send files or code selections to the chat with a single click.
 
+![Tool Window](doc/1.tool.png)
+
+![Settings](doc/2.settings.png)
+
+![Shortcuts](doc/3.shortcuts.png)
+
+
 ## Architecture Overview
 
 The plugin is built using the **IntelliJ Platform SDK** and leverages **JCEF (Java Chromium Embedded Framework)** to host a fully functional browser within the IDE.
@@ -23,7 +30,7 @@ Since AI chat websites are designed for human interaction via a standard browser
 
 ## Project Structure
 
-- `src/main/kotlin/com/example/`
+- `src/main/kotlin/com/dapa1/`
     - `actions/`: IDE actions for browser navigation and file/content integration.
     - `browser/`: Browser instance management and data keys.
     - `services/`: Project-level state management.

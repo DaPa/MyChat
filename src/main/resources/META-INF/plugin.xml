@@ -1,14 +1,14 @@
 <!-- Plugin Configuration File. Read more: https://plugins.jetbrains.com/docs/intellij/plugin-configuration-file.html -->
 <idea-plugin>
     <!-- Unique identifier of the plugin. It should be FQN. It cannot be changed between the plugin versions. -->
-    <id>com.example.MyChat</id>
+    <id>com.dapa1.MyChat</id>
 
     <!-- Public plugin name should be written in Title Case.
      Guidelines: https://plugins.jetbrains.com/docs/marketplace/best-practices-for-listing.html#plugin-name -->
     <name>MyChat</name>
 
     <!-- A displayed Vendor name or Organization ID displayed on the Plugins Page. -->
-    <vendor url="https://www.google.co.uk">MyCompany</vendor>
+    <vendor url="https://github.com/DaPa/MyChat">MyCompany</vendor>
 
     <!-- The description of the plugin displayed on the Plugin Page and IDE Plugin Manager.
          Guidelines: https://plugins.jetbrains.com/docs/marketplace/best-practices-for-listing.html#plugin-description -->
@@ -29,13 +29,13 @@
     <extensions defaultExtensionNs="com.intellij">
         <toolWindow
                 id="MyChatWindow"
-                factoryClass="com.example.MyChatWindowFactory"
+                factoryClass="com.dapa1.MyChatWindowFactory"
                 anchor="right"
                 icon="/icons/toolWindow.svg"
                 secondary="false"
         />
         <applicationConfigurable
-            instance="com.example.settings.MyChatConfigurable"
+            instance="com.dapa1.settings.MyChatConfigurable"
             id="MyChatSettings"
             displayName="MyChat"
         />
@@ -46,8 +46,8 @@
             "Class initialization must not depend on services" during startup.
             DumbAware = runs even during indexing (no need to wait for smart mode).
         -->
-        <postStartupActivity implementation="com.example.MyChatStartupActivity"/>
-        <jcef.appRequiredArgumentsProvider implementation="com.example.MyChatCefArgsProvider"/>
+        <postStartupActivity implementation="com.dapa1.MyChatStartupActivity"/>
+        <jcef.appRequiredArgumentsProvider implementation="com.dapa1.MyChatCefArgsProvider"/>
         <notificationGroup id="MyChat.ThemeChangeNotification" displayType="STICKY_BALLOON"/>
         <notificationGroup id="MyChat.Notification" displayType="BALLOON" isLogByDefault="true"/>
 
@@ -55,7 +55,7 @@
 
     <actions>
         <action id="MyChat.FindInBrowser"
-                class="com.example.actions.FindInBrowserAction"
+                class="com.dapa1.actions.FindInBrowserAction"
                 text="Find in Chat"
                 description="Find"
                 icon="AllIcons.Actions.Search">// for all icons, see https://intellij-icons.jetbrains.design/
@@ -63,7 +63,7 @@
         </action>
 
         <action id="MyChat.FindInBrowserNext"
-                class="com.example.actions.FindInBrowserNextAction"
+                class="com.dapa1.actions.FindInBrowserNextAction"
                 text="Find Next"
                 description="Find next"
                 icon="AllIcons.General.ChevronDown">
@@ -71,7 +71,7 @@
         </action>
 
         <action id="MyChat.FindInBrowserPrevious"
-                class="com.example.actions.FindInBrowserPreviousAction"
+                class="com.dapa1.actions.FindInBrowserPreviousAction"
                 text="Find Previous"
                 description="Find previous"
                 icon="AllIcons.General.ChevronUp">
@@ -79,7 +79,7 @@
         </action>
 
         <action id="MyChat.Back"
-                class="com.example.actions.BackAction"
+                class="com.dapa1.actions.BackAction"
                 text="Back"
                 description="Go back"
                 icon="AllIcons.Actions.Back">
@@ -87,7 +87,7 @@
         </action>
 
         <action id="MyChat.Forward"
-                class="com.example.actions.ForwardAction"
+                class="com.dapa1.actions.ForwardAction"
                 text="Forward"
                 description="Go forward"
                 icon="AllIcons.Actions.Forward">
@@ -95,7 +95,7 @@
         </action>
 
         <action id="MyChat.Stop"
-                class="com.example.actions.StopAction"
+                class="com.dapa1.actions.StopAction"
                 text="Stop"
                 description="Stop the current operation"
                 icon="AllIcons.Actions.Suspend">
@@ -103,7 +103,7 @@
         </action>
 
         <action id="MyChat.Refresh"
-                class="com.example.actions.RefreshAction"
+                class="com.dapa1.actions.RefreshAction"
                 text="Refresh"
                 description="Reload the current page"
                 icon="AllIcons.Actions.Refresh">
@@ -111,7 +111,7 @@
         </action>
 
         <action id="MyChat.Home"
-                class="com.example.actions.HomeAction"
+                class="com.dapa1.actions.HomeAction"
                 text="Home"
                 description="Go to the home page"
                 icon="AllIcons.Nodes.HomeFolder">
@@ -119,7 +119,7 @@
         </action>
 
         <action id="MyChat.ClearCookies"
-                class="com.example.actions.ClearCookiesAction"
+                class="com.dapa1.actions.ClearCookiesAction"
                 text="Clear Cookies"
                 description="Clear all cookies"
                 icon="AllIcons.Actions.GC">
@@ -127,7 +127,7 @@
         </action>
 
         <action id="MyChat.Debug"
-                class="com.example.actions.DebugAction"
+                class="com.dapa1.actions.DebugAction"
                 text="Debug"
                 description="Open CEF DevTools in the internal browser"
                 icon="AllIcons.Actions.StartDebugger">
@@ -135,7 +135,7 @@
         </action>
 
         <action id="MyChat.OpenSettings"
-                class="com.example.actions.OpenMyChatSettingsAction"
+                class="com.dapa1.actions.OpenMyChatSettingsAction"
                 text="MyChat Settings"
                 description="Open the IDE settings and jump to other settings -> myChat"
                 icon="AllIcons.General.Settings">
@@ -143,7 +143,7 @@
         </action>
 
         <action id="MyChat.OpenKeymap"
-                class="com.example.actions.OpenMyChatKeymapAction"
+                class="com.dapa1.actions.OpenMyChatKeymapAction"
                 text="MyChat Keymap"
                 description="Go to IDE settings -> keymap -> plugins -> myChat"
                 icon="AllIcons.General.Keyboard">
@@ -161,7 +161,7 @@
             <add-to-group group-id="ProjectViewPopupMenu" anchor="last"/>
 
             <action id="MyChat.SendToMyChat"
-                    class="com.example.actions.SendToMyChatAction"
+                    class="com.dapa1.actions.SendToMyChatAction"
                     text="Send To Chat"
                     description="Send the current file to the MyChat browser"
                     icon="AllIcons.Actions.Upload">
@@ -169,7 +169,7 @@
             </action>
 
             <action id="MyChat.EmbedToMyChat"
-                    class="com.example.actions.EmbedToMyChatAction"
+                    class="com.dapa1.actions.EmbedToMyChatAction"
                     text="Embed To Chat"
                     description="Embed the current file to the MyChat browser"
                     icon="AllIcons.Actions.Upload">
