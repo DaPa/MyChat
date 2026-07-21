@@ -11,20 +11,22 @@ The plugin is built using the **IntelliJ Platform SDK** and leverages **JCEF (Ja
 - **`MyChatWindow`**: The central UI component that hosts the `JBCefBrowser`. It manages browser lifecycle, site navigation, and custom UI elements like the Find Bar.
 - **`ComponentUtils` & `JsUtils`**: These utilities handle the core "integration" logic. They use JavaScript injection to interact with the web pages of AI services, enabling features like file uploads and text injection that are not natively supported by a simple browser view.
 - **`MyChatSettings`**: A persistent settings component that stores the list of supported AI sites, their names, and URLs.
+- **`MyChatStartupActivity`**: Ensures JCEF is safely initialized post-startup and manages cookie persistence.
 - **`BrowserLocator`**: A utility to reliably find the active browser instance across different contexts in the IDE.
-- **Actions**: A collection of actions (in `com.example.actions`) that provide browser control (back, forward, refresh) and integration features (`Send To`, `Embed To`).
+- **Actions**: A collection of actions (in `com.example.actions`) that provide browser control (back, forward, refresh, home, stop), cookie management, and integration features (`Send To`, `Embed To`).
 
 ### Integration Mechanism (JavaScript Injection)
 
 Since AI chat websites are designed for human interaction via a standard browser, MyChat uses sophisticated JavaScript injection to automate tasks:
-1. **File Injection**: When "Send To" is used, the plugin creates `File` blobs in the browser's context and simulates a `DataTransfer` event (similar to a drag-and-drop operation) to upload files.
-2. **Text Embedding**: For "Embed To", the plugin identifies the chat's input area using a set of common CSS selectors (defined in `ComponentUtils`) and injects formatted Markdown directly into the text field.
+1. **File Injection**: When "Send To" is used, the plugin creates `File` blobs in the browser's context and simulates a `DataTransfer` event (similar to a drag-and-drop operation) to upload files. It supports file size limits (10B to 5MB) and site-specific transformations (e.g., converting unsupported file types for Copilot).
+2. **Text Embedding**: For "Embed To", the plugin identifies the chat's input area using a set of common CSS selectors and injects formatted Markdown directly into the text field.
 
 ## Project Structure
 
 - `src/main/kotlin/com/example/`
     - `actions/`: IDE actions for browser navigation and file/content integration.
     - `browser/`: Browser instance management and data keys.
+    - `services/`: Project-level state management.
     - `settings/`: Plugin configuration, site definitions, and settings UI.
     - `ui/`: Tool window implementation, theme listeners, and the find bar.
     - `utils/`: Utilities for JCEF, JS injection, MIME types, and file handling.

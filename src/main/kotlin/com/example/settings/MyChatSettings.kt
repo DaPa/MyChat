@@ -30,6 +30,7 @@ class MyChatSettings : PersistentStateComponent<MyChatSettings.State> {
         var iconPath: String = "",   // persisted: classpath resource or absolute file path
         var name: String = "",
         var url: String = "",
+        var expectedStrings: MutableList<String> = mutableListOf(), // Site-specific phrases/selectors. One entry per string.
     ) {
         // Transient: derived from iconPath at runtime, never serialized.
         // Loaded on first access via loadIcon().
@@ -96,16 +97,27 @@ class MyChatSettings : PersistentStateComponent<MyChatSettings.State> {
             }
         }
 
+        fun selectors(vararg values: String): MutableList<String> = values.toMutableList()
+
         fun defaultSites(): MutableList<SiteConfig> = mutableListOf(
-            SiteConfig("/icons/Copilot.svg", "Copilot", "https://m365.cloud.microsoft/chat"),
-            SiteConfig("/icons/ChatGPT.svg", "ChatGPT", "https://chatgpt.com"),
-            SiteConfig("/icons/Claude.svg", "Claude", "https://claude.ai"),
-            SiteConfig("/icons/Perplexity.svg", "Perplexity", "https://www.perplexity.ai"),
-            SiteConfig("/icons/Grok.svg", "Grok", "https://grok.com"),
-            SiteConfig("/icons/ManusIM.svg", "Manus", "https://manus.im"),
-            SiteConfig("/icons/Gemini.svg", "Gemini", "https://gemini.google.com/app"),
-            SiteConfig("/icons/Google.svg", "Google", "https://google.com/ai"),
-            SiteConfig("/icons/DuckDuckGo.svg", "Duck", "https://duck.ai/chat"),
+            SiteConfig("/icons/Copilot.svg", "Copilot", "https://m365.cloud.microsoft/chat",
+                selectors("[aria-label*=\"Add and manage sources\"]")),
+            SiteConfig("/icons/ChatGPT.svg", "ChatGPT", "https://chatgpt.com",
+                selectors("[aria-label*=\"Add files and more\"]")),
+            SiteConfig("/icons/Claude.svg", "Claude", "https://claude.ai",
+                selectors("[aria-label*=\"Add files, connectors, and more\"]")),
+            SiteConfig("/icons/Perplexity.svg", "Perplexity", "https://www.perplexity.ai",
+                selectors("[aria-label*=\"Add files or tools\"]")),
+            SiteConfig("/icons/Grok.svg", "Grok", "https://grok.com",
+                selectors("[aria-label*=\"Attach\"]")),
+            SiteConfig("/icons/ManusIM.svg", "Manus", "https://manus.im",
+                selectors("")),
+            SiteConfig("/icons/Gemini.svg", "Gemini", "https://gemini.google.com/app",
+                selectors("[aria-label*=\"Upload and tools\"]")),
+            SiteConfig("/icons/Google.svg", "Google", "https://google.com/ai",
+                selectors("[aria-label*=\"Add files and tools\"]", "[aria-label*=\"Lisää tiedostoja ja työkaluja\"]")),
+            SiteConfig("/icons/DuckDuckGo.svg", "Duck", "https://duck.ai/chat",
+                selectors("[aria-label*=\"Add images or PDFs\"]")),
             SiteConfig("/icons/generic.svg", "generic", "https://start.duckduckgo.com"),
         )
     }

@@ -24,40 +24,6 @@ internal object ComponentUtils {
             .replace("__ESCAPED_MARKDOWN_TEXT__", markdown)
 
     /**
-     * Selectors for "Attach" buttons on various AI chat sites.
-     * Order indicates priority. Includes localized strings for supported languages (e.g., Finnish "Lisää").
-     */
-    private val SELECTORS_JS_ARRAY = listOf(
-        "[aria-label*=\"Add files and more\"]",              // ChatGPT
-        "[aria-label*=\"Add and manage sources\"]",          // Copilot
-        "[aria-label*=\"More input options\"]",              // AI Studio
-        "[aria-label*=\"Lisää tiedostoja ja työkaluja\"]",
-        "[aria-label*=\"Lisää tiedostoja\"]",
-        "[aria-label*=\"Lisää\"]",
-        "[aria-label*=\"Add files and tools\"]",
-        "[aria-label*=\"Add files\"]",
-        "[aria-label*=\"Upload and tools\"]",                // Gemini
-        "[aria-label*=\"Upload & tools\"]",
-        "[aria-label*=\"Add files, connectors, and more\"]", // Claude
-        "[aria-label*=\"Add files or tools\"]",              // Perplexity
-        "[aria-label*=\"Add images or PDFs\"]",              // DuckDuckGo AI
-        "[aria-label*=\"Attach\"]",                          // Grok
-        "button[title*=\"Attach\"]",                         // generics
-        "[data-testid*=\"attach\"]",
-        "[aria-label*=\"Add\"]",
-        "[aria-label*=\"Upload\"]",
-        "[data-testid=\"composer-attach-btn\"]",
-        "[data-testid=\"composer-plus-btn\"]"
-    )
-
-    private val jsArrayLiteral = SELECTORS_JS_ARRAY.joinToString(
-        prefix = "[",
-        postfix = "]"
-    ) { selector ->
-        "\"" + selector.replace("\"", "\\\"") + "\""
-    }
-
-    /**
      * Prepare the file for Copilot by converting it to a text file if necessary.
      * See: https://support.microsoft.com/en-us/Microsoft-365-Copilot/file-formats-supported-by-microsoft-365-copilot
      */
@@ -113,7 +79,7 @@ internal object ComponentUtils {
                         .replace("__BASE64_DATA__", base64)
                         .replace("__MIME_TYPE__", mimeType)
                         .replace("__SAFE_NAME__", safeName)
-                ).append("(dataTransfer);\n\n")
+                ).append("\n")
             }
         }
 
@@ -121,6 +87,39 @@ internal object ComponentUtils {
             cleanupTempFiles(tempFiles)
             return
         }
+
+        val sites = MyChatSettings.getInstance().state.sites
+
+        val orderedSites =
+            listOfNotNull(currentSite) +
+            sites.filter { it !== currentSite }
+
+        val phrases =
+            buildList {
+                addAll(
+                    orderedSites.flatMap { it.expectedStrings }
+                )
+
+                addAll(
+                    listOf(
+                        "button[title*=\"Attach\"]",
+                        "[data-testid*=\"attach\"]",
+                        "[aria-label*=\"Add\"]",
+                        "[aria-label*=\"Upload\"]",
+                        "[data-testid=\"composer-attach-btn\"]",
+                        "[data-testid=\"composer-plus-btn\"]"
+                    )
+                )
+            }
+
+        val jsArrayLiteral =
+            phrases.joinToString(
+                prefix = "[",
+                postfix = "]"
+            ) {
+                "\"${escapeForJsString(it)}\""
+            }
+
 
         val js = INJECT_FILES_JS_TEMPLATE
             .replace("__FILE_BLOBS__", fileBlobsJs)

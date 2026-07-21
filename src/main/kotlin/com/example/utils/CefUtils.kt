@@ -1,6 +1,9 @@
 package com.example.utils
 
+import com.intellij.notification.NotificationGroupManager
+import com.intellij.notification.NotificationType
 import com.intellij.openapi.diagnostic.Logger
+import com.intellij.openapi.project.Project
 import com.intellij.ui.jcef.JBCefBrowser
 import org.cef.CefSettings
 import org.cef.browser.CefBrowser
@@ -46,7 +49,7 @@ val SUPPRESSED_CONSOLE_PATTERNS: List<String> = listOf(
  * @param logger   The caller's own Logger, so log lines are attributed to the
  *                 correct class rather than to CefUtils itself.
  */
-fun registerConsoleSuppressingDisplayHandler(browser: JBCefBrowser, logger: Logger) {
+fun registerConsoleSuppressingDisplayHandler(browser: JBCefBrowser, project: Project, logger: Logger) {
     val handler = object : CefDisplayHandlerAdapter() {
         override fun onConsoleMessage(
             cefBrowser: CefBrowser,
@@ -55,6 +58,19 @@ fun registerConsoleSuppressingDisplayHandler(browser: JBCefBrowser, logger: Logg
             source: String,
             line: Int
         ): Boolean {
+
+            // Handle MyChat-specific notifications first.
+            val prefix = "MYCHAT_UPLOAD_PATH: "
+            if (message.startsWith(prefix)) {
+                var json = message.removePrefix(prefix)
+                if (json.startsWith("https://")) {
+                    json = json.removePrefix("https://")
+                }
+                notify(project, "MyChat upload", json)
+                return true
+            }
+
+            // Spam logs suppression logic.
             if (SUPPRESSED_CONSOLE_PATTERNS.any { message.contains(it) }) {
                 return true  // suppress — don't forward to CEF's own logger
             }
@@ -63,4 +79,15 @@ fun registerConsoleSuppressingDisplayHandler(browser: JBCefBrowser, logger: Logg
         }
     }
     browser.jbCefClient.addDisplayHandler(handler, browser.cefBrowser)
+}
+
+private fun notify(project: Project, title: String, content: String) {
+    NotificationGroupManager.getInstance()
+        .getNotificationGroup("MyChat.Notification")
+        .createNotification(
+            title,
+            content,
+            NotificationType.INFORMATION
+        )
+        .notify(project)
 }

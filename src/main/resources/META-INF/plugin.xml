@@ -10,7 +10,7 @@
     <!-- A displayed Vendor name or Organization ID displayed on the Plugins Page. -->
     <vendor url="https://www.google.co.uk">MyCompany</vendor>
 
-    <!-- Description of the plugin displayed on the Plugin Page and IDE Plugin Manager.
+    <!-- The description of the plugin displayed on the Plugin Page and IDE Plugin Manager.
          Guidelines: https://plugins.jetbrains.com/docs/marketplace/best-practices-for-listing.html#plugin-description -->
     <description><![CDATA[
         <b>MyChat</b> integrates popular AI chat services (ChatGPT, Claude, Gemini, etc.)
@@ -49,6 +49,8 @@
         <postStartupActivity implementation="com.example.MyChatStartupActivity"/>
         <jcef.appRequiredArgumentsProvider implementation="com.example.MyChatCefArgsProvider"/>
         <notificationGroup id="MyChat.ThemeChangeNotification" displayType="STICKY_BALLOON"/>
+        <notificationGroup id="MyChat.Notification" displayType="BALLOON" isLogByDefault="true"/>
+
     </extensions>
 
     <actions>

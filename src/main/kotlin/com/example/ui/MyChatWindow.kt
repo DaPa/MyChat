@@ -108,11 +108,7 @@ class MyChatWindow(private val project: Project) : Disposable {
      */
     @Volatile
     internal var currentSite: MyChatSettings.SiteConfig =
-        MyChatSettings.getInstance().state.sites.firstOrNull() ?: MyChatSettings.SiteConfig(
-            "",
-            "ChatGPT",
-            "https://chatgpt.com"
-        )
+        MyChatSettings.getInstance().state.sites.firstOrNull() ?: MyChatSettings.defaultSites().first()
 
     internal lateinit var browser: JBCefBrowser
     internal lateinit var findBar: BrowserFindBar
@@ -185,7 +181,7 @@ class MyChatWindow(private val project: Project) : Disposable {
             }
         }
 
-        registerConsoleSuppressingDisplayHandler(browser, LOG)
+        registerConsoleSuppressingDisplayHandler(browser, project, LOG)
 
         val combo = ComboBox<MyChatSettings.SiteConfig>()
         combo.addActionListener {

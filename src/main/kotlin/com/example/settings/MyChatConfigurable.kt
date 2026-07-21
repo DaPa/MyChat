@@ -9,9 +9,11 @@ import com.intellij.openapi.actionSystem.DefaultActionGroup
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.application.ModalityState
 import com.intellij.openapi.options.Configurable
+import com.intellij.openapi.ui.DialogBuilder
 import com.intellij.openapi.ui.Messages
 import com.intellij.openapi.util.text.HtmlChunk
 import com.intellij.ui.ToolbarDecorator
+import com.intellij.ui.components.JBScrollPane
 import com.intellij.ui.table.JBTable
 import java.awt.BorderLayout
 import java.awt.Component
@@ -42,6 +44,7 @@ class MyChatConfigurable : Configurable {
         private const val COL_ICON = 0
         private const val COL_NAME = 1
         private const val COL_URL = 2
+        private const val COL_EXPECTED_STRINGS = 3
 
         // Icon column is narrow — just wide enough for a 16×16 icon + padding
         private const val ICON_COL_WIDTH = 32
@@ -60,11 +63,11 @@ class MyChatConfigurable : Configurable {
      * rendering booleans as checkboxes or Icons as labels unexpectedly.
      */
     private val model = object : DefaultTableModel(
-        arrayOf("Icon", "Name", "URL"), 0
+        arrayOf("Icon", "Name", "URL", "Expected Strings"), 0
     ) {
         // All columns are editable:
         //  - COL_ICON   → IconCellEditor opens a file chooser on single click
-        //  - COL_NAME, COL_URL → default inline text editor
+        //  - COL_NAME, COL_URL, COL_EXPECTED_STRINGS → default inline text editor
         // ❗ `column != COL_ICON` was wrong — it accidentally disabled the icon editor
         //    entirely, so clicks on the icon column did nothing.
         override fun isCellEditable(row: Int, column: Int): Boolean = true
@@ -73,7 +76,10 @@ class MyChatConfigurable : Configurable {
     }
 
     private val table = JBTable(model).apply {
+        // Prevent users from dragging columns to new positions
+        tableHeader.reorderingAllowed = false
         rowHeight = ROW_HEIGHT
+        //autoResizeMode = JTable.AUTO_RESIZE_LAST_COLUMN
 
         // Icon column: fixed narrow width, not resizable
         columnModel.getColumn(COL_ICON).apply {
@@ -83,6 +89,18 @@ class MyChatConfigurable : Configurable {
             cellRenderer = IconCellRenderer()
             cellEditor = IconCellEditor()
         }
+
+        columnModel.getColumn(COL_NAME).preferredWidth = 60
+        columnModel.getColumn(COL_URL).preferredWidth = 200
+
+        // Expected strings column: multi-line editor
+        columnModel
+            .getColumn(COL_EXPECTED_STRINGS)
+            .apply {
+                cellEditor = MultiLineCellEditor()
+                preferredWidth = 500
+            }
+
     }
 
     override fun getDisplayName(): String = "MyChat"
@@ -107,7 +125,7 @@ class MyChatConfigurable : Configurable {
         val tablePanel = ToolbarDecorator.createDecorator(table)
             .setAddAction {
                 // New row: no icon by default (empty path → generic icon shown by renderer)
-                model.addRow(arrayOf("", "", ""))
+                model.addRow(arrayOf("", "", "", ""))
             }
             .setRemoveAction {
                 val row = table.selectedRow
@@ -151,6 +169,8 @@ class MyChatConfigurable : Configurable {
             if (model.getValueAt(i, COL_ICON) as String != site.iconPath) return true
             if (model.getValueAt(i, COL_NAME) as String != site.name) return true
             if (model.getValueAt(i, COL_URL) as String != site.url) return true
+            if (model.getValueAt(i, COL_EXPECTED_STRINGS) as String
+                != site.expectedStrings.joinToString("\n")) return true
         }
         return false
     }
@@ -167,12 +187,23 @@ class MyChatConfigurable : Configurable {
             val name = model.getValueAt(i, COL_NAME) as String
             val url = model.getValueAt(i, COL_URL) as String
             val path = model.getValueAt(i, COL_ICON) as String
+            val expectedStrings =
+                (model.getValueAt(i, COL_EXPECTED_STRINGS) as String)
+                    .lineSequence()
+                    .map { it.trim() }
+                    .filter { it.isNotEmpty() }
+                    .toMutableList()
 
             require(name.isNotBlank()) { "Name cannot be empty (row ${i + 1})" }
             require(url.isNotBlank()) { "URL cannot be empty (row ${i + 1})" }
 
             // icon = null: transient cache will be resolved from iconPath on next resolveIcon()
-            newList.add(MyChatSettings.SiteConfig(iconPath = path, name = name, url = url))
+            newList += MyChatSettings.SiteConfig(
+                iconPath = path,
+                name = name,
+                url = url,
+                expectedStrings = expectedStrings
+            )
         }
 
         state.sites = newList
@@ -185,7 +216,14 @@ class MyChatConfigurable : Configurable {
     override fun reset() {
         model.rowCount = 0
         MyChatSettings.getInstance().state.sites.forEach { site ->
-            model.addRow(arrayOf(site.iconPath, site.name, site.url))
+            model.addRow(
+                arrayOf(
+                    site.iconPath,
+                    site.name,
+                    site.url,
+                    site.expectedStrings.joinToString("\n")
+                )
+            )
         }
     }
 
@@ -199,7 +237,14 @@ class MyChatConfigurable : Configurable {
 
         model.rowCount = 0
         MyChatSettings.defaultSites().forEach { site ->
-            model.addRow(arrayOf(site.iconPath, site.name, site.url))
+            model.addRow(
+                arrayOf(
+                    site.iconPath,
+                    site.name,
+                    site.url,
+                    site.expectedStrings.joinToString("\n")
+                )
+            )
         }
     }
 
@@ -228,7 +273,7 @@ class MyChatConfigurable : Configurable {
             setToolTipText(HtmlChunk.text(path.ifBlank { "Click to choose an icon" }))
             return this
         }
-    }
+    }  // class IconCellRenderer
 
     // --- Icon column: Editor ---
 
@@ -301,6 +346,36 @@ class MyChatConfigurable : Configurable {
                 horizontalAlignment = SwingConstants.CENTER
             }
         }
-    }
+    }  // class IconCellEditor
+
+    private class MultiLineCellEditor : AbstractCellEditor(), TableCellEditor {
+
+        private var editorValue: String = ""
+
+        override fun getCellEditorValue(): Any = editorValue
+
+        override fun getTableCellEditorComponent(
+            table: JTable,
+            value: Any?,
+            isSelected: Boolean,
+            row: Int,
+            column: Int
+        ): Component {
+
+            editorValue = value as? String ?: ""
+            val area = JTextArea(value as? String ?: "", 10, 60)
+
+            val builder = DialogBuilder()
+            builder.title("Expected Strings")
+            builder.setCenterPanel(JBScrollPane(area))
+
+            if (builder.showAndGet()) {
+                editorValue = area.text
+            }
+
+            return JLabel(editorValue)
+        }
+
+    }  // class MultiLineCellEditor
 
 }  // class MyChatConfigurable

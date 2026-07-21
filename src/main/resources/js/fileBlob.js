@@ -16,5 +16,4 @@
         // dataTransfer is defined as DataTransfer in injectFiles.js
         dataTransfer.items.add(new File([blob], SAFE_NAME, {type: MIME_TYPE}));
     }
-)
-// Notice there's no final "();". This code evaluates to a function object!
+)(dataTransfer);
