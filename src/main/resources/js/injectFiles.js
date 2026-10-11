@@ -42,7 +42,7 @@
                     if (attachBtn) {
                         // 2. click button
                         attachBtn.click();
-                        // 3. wait for button click to complete
+                        // 3. wait for the button click to complete
                         setTimeout(function () {
                             input = document.querySelector('input[type="file"]');
                             if (input) {

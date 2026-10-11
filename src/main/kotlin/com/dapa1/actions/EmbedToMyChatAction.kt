@@ -23,7 +23,7 @@ class EmbedToMyChatAction : AbstractFileAction() {
         super.update(e)
         if (!e.presentation.isVisible || !e.presentation.isEnabled) return
 
-        e.presentation.text = "Embed To Chat"
+        e.presentation.text = "Embed to Chat"
         val hasRealFiles = e.resolveIoFiles().isNotEmpty()
         var enable = hasRealFiles
         val editor = e.getData(CommonDataKeys.EDITOR)

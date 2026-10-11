@@ -162,7 +162,7 @@
 
             <action id="MyChat.SendToMyChat"
                     class="com.dapa1.actions.SendToMyChatAction"
-                    text="Send To Chat"
+                    text="Send to Chat"
                     description="Send the current file to the MyChat browser"
                     icon="AllIcons.Actions.Upload">
                 <keyboard-shortcut keymap="$default" first-keystroke="alt M"/>
@@ -170,7 +170,7 @@
 
             <action id="MyChat.EmbedToMyChat"
                     class="com.dapa1.actions.EmbedToMyChatAction"
-                    text="Embed To Chat"
+                    text="Embed to Chat"
                     description="Embed the current file to the MyChat browser"
                     icon="AllIcons.Actions.Upload">
                 <keyboard-shortcut keymap="$default" first-keystroke="alt E"/>
