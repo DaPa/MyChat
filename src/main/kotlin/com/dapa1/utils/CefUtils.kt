@@ -1,5 +1,6 @@
 package com.dapa1.utils
 
+import com.dapa1.settings.MyChatSettings
 import com.intellij.notification.NotificationGroupManager
 import com.intellij.notification.NotificationType
 import com.intellij.openapi.diagnostic.Logger
@@ -59,14 +60,32 @@ fun registerConsoleSuppressingDisplayHandler(browser: JBCefBrowser, project: Pro
             line: Int
         ): Boolean {
 
-            // Handle MyChat-specific notifications first.
-            val prefix = "MYCHAT_UPLOAD_PATH: "
-            if (message.startsWith(prefix)) {
-                var json = message.removePrefix(prefix)
-                if (json.startsWith("https://")) {
-                    json = json.removePrefix("https://")
+            // Handle MyChat-specific upload diagnostics before general log suppression.
+            val uploadPathPrefix = "MYCHAT_UPLOAD_PATH: "
+            if (message.startsWith(uploadPathPrefix)) {
+                /*
+                 * Always consume this MyChat-specific console message. When diagnostic
+                 * notifications are disabled, the message should not fall through into
+                 * the normal CEF logging path.
+                 */
+                val notificationsEnabled =
+                    MyChatSettings.getInstance().state.uploadDebugNotificationsEnabled
+
+                if (notificationsEnabled) {
+                    var notificationText = message.removePrefix(uploadPathPrefix)
+
+                    /*
+                     * Preserve the existing display behavior by removing the URL scheme.
+                     * Consider retaining the scheme if the notification should display
+                     * the complete URL exactly as emitted by JavaScript.
+                     */
+                    if (notificationText.startsWith("https://")) {
+                        notificationText = notificationText.removePrefix("https://")
+                    }
+
+                    notify(project, "MyChat upload", notificationText)
                 }
-                notify(project, "MyChat upload", json)
+
                 return true
             }
 

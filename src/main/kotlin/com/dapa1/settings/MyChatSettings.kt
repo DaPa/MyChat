@@ -5,7 +5,7 @@ import com.intellij.openapi.components.*
 import com.intellij.openapi.util.IconLoader
 import javax.swing.Icon
 
-@Service
+@Service(Service.Level.APP)
 @State(
     name = "MyChatSettings",
     storages = [Storage("MyChatSettings.xml")]
@@ -34,7 +34,7 @@ class MyChatSettings : PersistentStateComponent<MyChatSettings.State> {
     ) {
         // Transient: derived from iconPath at runtime, never serialized.
         // Loaded on first access via loadIcon().
-        @Transient
+        @get:com.intellij.util.xmlb.annotations.Transient
         var icon: Icon? = null
 
         /**
@@ -52,7 +52,16 @@ class MyChatSettings : PersistentStateComponent<MyChatSettings.State> {
             normalizeUrl(url).startsWith("m365.cloud.microsoft")
     }
 
-    data class State(
+    class State(
+        /**
+         * When enabled, MyChat displays IDE notifications for upload-path messages
+         * received from JavaScript running inside an embedded JCEF browser.
+         *
+         * This is primarily a diagnostic option and is disabled by default to avoid
+         * showing notifications during normal plugin use.
+         */
+        var uploadDebugNotificationsEnabled: Boolean = false,
+
         var sites: MutableList<SiteConfig> = defaultSites()
     )
 
@@ -100,24 +109,42 @@ class MyChatSettings : PersistentStateComponent<MyChatSettings.State> {
         fun selectors(vararg values: String): MutableList<String> = values.toMutableList()
 
         fun defaultSites(): MutableList<SiteConfig> = mutableListOf(
-            SiteConfig("/icons/Copilot.svg", "Copilot", "https://m365.cloud.microsoft/chat",
-                selectors("[aria-label*=\"Add and manage sources\"]")),
-            SiteConfig("/icons/ChatGPT.svg", "ChatGPT", "https://chatgpt.com",
-                selectors("[aria-label*=\"Add files and more\"]")),
-            SiteConfig("/icons/Claude.svg", "Claude", "https://claude.ai",
-                selectors("[aria-label*=\"Add files, connectors, and more\"]")),
-            SiteConfig("/icons/Perplexity.svg", "Perplexity", "https://www.perplexity.ai",
-                selectors("[aria-label*=\"Add files or tools\"]")),
-            SiteConfig("/icons/Grok.svg", "Grok", "https://grok.com",
-                selectors("[aria-label*=\"Attach\"]")),
-            SiteConfig("/icons/ManusIM.svg", "Manus", "https://manus.im",
-                selectors("")),
-            SiteConfig("/icons/Gemini.svg", "Gemini", "https://gemini.google.com/app",
-                selectors("[aria-label*=\"Upload and tools\"]")),
-            SiteConfig("/icons/Google.svg", "Google", "https://google.com/ai",
-                selectors("[aria-label*=\"Add files and tools\"]", "[aria-label*=\"Lisää tiedostoja ja työkaluja\"]")),
-            SiteConfig("/icons/DuckDuckGo.svg", "Duck", "https://duck.ai/chat",
-                selectors("[aria-label*=\"Add images or PDFs\"]")),
+            SiteConfig(
+                "/icons/Copilot.svg", "Copilot", "https://m365.cloud.microsoft/chat",
+                selectors("[aria-label*=\"Add and manage sources\"]")
+            ),
+            SiteConfig(
+                "/icons/ChatGPT.svg", "ChatGPT", "https://chatgpt.com",
+                selectors("[aria-label*=\"Add files and more\"]")
+            ),
+            SiteConfig(
+                "/icons/Claude.svg", "Claude", "https://claude.ai",
+                selectors("[aria-label*=\"Add files, connectors, and more\"]")
+            ),
+            SiteConfig(
+                "/icons/Perplexity.svg", "Perplexity", "https://www.perplexity.ai",
+                selectors("[aria-label*=\"Add files or tools\"]")
+            ),
+            SiteConfig(
+                "/icons/Grok.svg", "Grok", "https://grok.com",
+                selectors("[aria-label*=\"Attach\"]")
+            ),
+            SiteConfig(
+                "/icons/ManusIM.svg", "Manus", "https://manus.im",
+                selectors("")
+            ),
+            SiteConfig(
+                "/icons/Gemini.svg", "Gemini", "https://gemini.google.com/app",
+                selectors("[aria-label*=\"Upload and tools\"]")
+            ),
+            SiteConfig(
+                "/icons/Google.svg", "Google", "https://google.com/ai",
+                selectors("[aria-label*=\"Add files and tools\"]", "[aria-label*=\"Lisää tiedostoja ja työkaluja\"]")
+            ),
+            SiteConfig(
+                "/icons/DuckDuckGo.svg", "Duck", "https://duck.ai/chat",
+                selectors("[aria-label*=\"Add images or PDFs\"]")
+            ),
             SiteConfig("/icons/generic.svg", "generic", "https://start.duckduckgo.com"),
         )
     }

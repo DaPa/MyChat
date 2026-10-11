@@ -23,4 +23,5 @@
 
 ## [1.0.2] - 2026-10-11
 - Multiple "Embed to"
+- "Debugging notifications" setting toggle
 

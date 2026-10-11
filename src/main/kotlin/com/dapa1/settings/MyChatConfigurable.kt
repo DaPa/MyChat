@@ -13,6 +13,7 @@ import com.intellij.openapi.ui.DialogBuilder
 import com.intellij.openapi.ui.Messages
 import com.intellij.openapi.util.text.HtmlChunk
 import com.intellij.ui.ToolbarDecorator
+import com.intellij.ui.components.JBCheckBox
 import com.intellij.ui.components.JBScrollPane
 import com.intellij.ui.table.JBTable
 import java.awt.BorderLayout
@@ -103,6 +104,21 @@ class MyChatConfigurable : Configurable {
 
     }
 
+    /**
+     * Controls whether upload-path console messages produce visible IDE
+     * notifications. The value is copied to persistent settings only by apply().
+     */
+    private val uploadDebugNotificationsCheckBox = JBCheckBox(
+        "Debugging notifications"
+    ).apply {
+        setToolTipText(
+            HtmlChunk.text(
+                "Show IDE notifications when MyChat triggers diagnostic messages " +
+                        "from the embedded browser."
+            )
+        )
+    }
+
     override fun getDisplayName(): String = "MyChat"
 
     // --- Toolbar: "Restore Defaults" button above the table ---
@@ -117,6 +133,30 @@ class MyChatConfigurable : Configurable {
             .createActionToolbar("MyChatSettingsToolbar", DefaultActionGroup(action), true)
         toolbar.targetComponent = table
         return toolbar.component
+    }
+
+    /**
+     * Creates one horizontal row above the sites-table.
+     *
+     * The Restore Defaults toolbar remains on the left, followed by the checkbox
+     * controlling upload-path debugging notifications.
+     */
+    private fun createTopPanel(): JComponent {
+        val toolbar = createDefaultsToolbar()
+
+        /*
+         * Place the toolbar and checkbox in a compact horizontal group. The empty
+         * border adds a small visual gap between the toolbar action and checkbox.
+         */
+        val checkBoxPanel = JPanel(BorderLayout()).apply {
+            border = BorderFactory.createEmptyBorder(0, 8, 0, 0)
+            add(uploadDebugNotificationsCheckBox, BorderLayout.WEST)
+        }
+
+        return JPanel(BorderLayout()).apply {
+            add(toolbar, BorderLayout.WEST)
+            add(checkBoxPanel, BorderLayout.CENTER)
+        }
     }
 
     // --- Configurable interface ---
@@ -140,7 +180,7 @@ class MyChatConfigurable : Configurable {
             .createPanel()
 
         return JPanel(BorderLayout()).apply {
-            add(createDefaultsToolbar(), BorderLayout.NORTH)
+            add(createTopPanel(), BorderLayout.NORTH)
             add(tablePanel, BorderLayout.CENTER)
         }
     }
@@ -161,7 +201,10 @@ class MyChatConfigurable : Configurable {
      * Compares all four fields including iconPath.
      */
     override fun isModified(): Boolean {
-        val sites = MyChatSettings.getInstance().state.sites
+        val state = MyChatSettings.getInstance().state
+        if(uploadDebugNotificationsCheckBox.isSelected != state.uploadDebugNotificationsEnabled) return true
+
+        val sites = state.sites
         if (model.rowCount != sites.size) return true
 
         for (i in 0 until model.rowCount) {
@@ -182,6 +225,9 @@ class MyChatConfigurable : Configurable {
     override fun apply() {
         val state = MyChatSettings.getInstance().state
         val newList = mutableListOf<MyChatSettings.SiteConfig>()
+
+        // Persist the notification preference selected in the configurable.
+        state.uploadDebugNotificationsEnabled = uploadDebugNotificationsCheckBox.isSelected
 
         for (i in 0 until model.rowCount) {
             val name = model.getValueAt(i, COL_NAME) as String
@@ -214,8 +260,13 @@ class MyChatConfigurable : Configurable {
      * Populates iconPath (String) — the renderer will load the actual icon for display.
      */
     override fun reset() {
+        val state = MyChatSettings.getInstance().state
+
+        // Restore the checkbox from the currently persisted application setting.
+        uploadDebugNotificationsCheckBox.isSelected = state.uploadDebugNotificationsEnabled
+
         model.rowCount = 0
-        MyChatSettings.getInstance().state.sites.forEach { site ->
+        state.sites.forEach { site ->
             model.addRow(
                 arrayOf(
                     site.iconPath,
@@ -367,6 +418,12 @@ class MyChatConfigurable : Configurable {
 
             val builder = DialogBuilder()
             builder.title("Expected Strings")
+            /*
+             * Keep the explicit setter call. DialogBuilder's getter and setter use
+             * different component types, so Kotlin cannot expose centerPanel as a
+             * writable synthetic property.
+             */
+            @Suppress("UsePropertyAccessSyntax")
             builder.setCenterPanel(JBScrollPane(area))
 
             if (builder.showAndGet()) {
